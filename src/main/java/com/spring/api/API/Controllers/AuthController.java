@@ -1,13 +1,11 @@
 package com.spring.api.API.Controllers;
 
 import com.spring.api.API.models.DTOs.Auth.AccountTokenRequest;
-import com.spring.api.API.models.DTOs.Auth.AuthRequest;
 import com.spring.api.API.models.DTOs.Auth.AuthResponse;
 import com.spring.api.API.models.DTOs.Auth.TokenRequest;
 import com.spring.api.API.services.JWTService;
 import com.spring.api.API.services.TokenService;
 import jakarta.validation.Valid;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -40,14 +39,14 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthRequest request){
+    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password){
         long start = System.currentTimeMillis();
 
         org.springframework.security.core.Authentication auth = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-                request.getUsername(),
-                request.getPassword()
-        )
+                username,
+                password
+            )
         );
 
         UserDetails user = (UserDetails) auth.getPrincipal();
@@ -55,7 +54,7 @@ public class AuthController {
         System.out.println("AUTH: " + (System.currentTimeMillis() - start));
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(
                 jwtService.generateToken(user),
-                this.tokenService.create(request.getUsername())
+                this.tokenService.create(username)
         ));
     }
 

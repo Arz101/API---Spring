@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 @RestController
@@ -35,5 +36,10 @@ public class PostsController {
     @GetMapping("/feed")
     public ResponseEntity<?> getFeed(Authentication auth) {
         return ResponseEntity.ok(this.service.feed(auth.getName()));    
+    }
+
+    @PostMapping("/like/{post_id}")
+    public ResponseEntity<?> likePost(@PathVariable Long post_id, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(        this.service.setLike(post_id, auth.getName()));
     }
 }

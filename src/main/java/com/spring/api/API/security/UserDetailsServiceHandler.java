@@ -3,12 +3,10 @@ package com.spring.api.API.security;
 import com.spring.api.API.Repositories.IUserRepository;
 import com.spring.api.API.models.User;
 import com.spring.api.API.security.Exceptions.AccountException;
-
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 
 @Service

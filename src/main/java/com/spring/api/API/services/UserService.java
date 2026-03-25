@@ -8,7 +8,6 @@ import com.spring.api.API.security.Exceptions.EmailException;
 import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
 import jakarta.transaction.Transactional;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

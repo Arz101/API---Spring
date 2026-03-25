@@ -4,6 +4,7 @@ import com.spring.api.API.models.Posts;
 import com.spring.api.API.models.DTOs.Posts.PostResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 
 public interface IPostsRepository extends JpaRepository<Posts, Long> {
-    Posts findById(long id);
+    Optional<Posts> findById(long id);
 
     @Query("""
         SELECT p 

@@ -3,6 +3,7 @@ package com.spring.api.API.security;
 import com.spring.api.API.security.Exceptions.AccountException;
 import com.spring.api.API.security.Exceptions.EmailException;
 import com.spring.api.API.security.Exceptions.InvalidTokenException;
+import com.spring.api.API.security.Exceptions.PostNotFoundException;
 import com.spring.api.API.security.Exceptions.ProfilePrivateException;
 import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
@@ -84,6 +85,16 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(error);
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<?> PostNotFoundHandleException(PostNotFoundException e){
+        Map<String, String> error = new HashMap<>();
+        error.put("message", e.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
 }
