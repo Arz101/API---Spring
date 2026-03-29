@@ -21,7 +21,7 @@ public class Profiles {
         @Column(name = "profile_id")
         private Long profile_id;
 
-        @OneToOne()
+        @OneToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id")
         private User user;
 

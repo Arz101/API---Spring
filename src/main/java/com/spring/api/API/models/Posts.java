@@ -22,9 +22,9 @@ public class Posts {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "profile_id")
-    private Profiles profile;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @NotNull
     @Column(name = "description", nullable = false, length = Integer.MAX_VALUE)
@@ -40,10 +40,10 @@ public class Posts {
 
     public Posts(){}
 
-    public Posts(CreatePostDTO postsDTO, Profiles profile){
+    public Posts(CreatePostDTO postsDTO, User user){
         this.description = postsDTO.getDescription();
         this.picture = postsDTO.getPicture();
-        this.profile = profile;
+        this.user = user;
     }
 
     public Long getId() {
@@ -54,12 +54,12 @@ public class Posts {
         this.id = id;
     }
 
-    public Profiles getProfile() {
-        return profile;
+    public User getUser() {
+        return user;
     }
 
-    public void setProfile(Profiles profile) {
-        this.profile = profile;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getDescription() {

@@ -15,5 +15,6 @@ public class ProfileResponseDTO {
     private String lastname;
     private LocalDate birthday;
     private String avatar_url;
+    private String bio;
     private Boolean privateField;
 }

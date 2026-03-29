@@ -79,7 +79,6 @@ public class UserService {
         );
     }
 
-
     @Transactional
     public UserResponseDTO updateUser(UpdateUserDTO new_data, String username){
         User curr = this.repository.findByUsername(username)

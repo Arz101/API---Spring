@@ -6,12 +6,17 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.parameters.P;
 
 import java.util.Optional;
 
 public interface ITokensRepository extends JpaRepository<Tokens, Long> {
-    Optional<Tokens> findByTokenHashAndRevoked(String tokenHash, Boolean revoked);
-    Optional<Tokens> findTokensByAssignedToAndRevoked(User assignedTo, Boolean revoked);
+    @Query("""
+        SELECT t
+        FROM Tokens t
+        WHERE t.tokenHash =:tokenHash AND t.revoked =:revoked
+    """)
+    Optional<Tokens> findByTokenHashAndRevoked(@Param("tokenHash") String tokenHash, @Param("revoked") Boolean revoked);
 
     @Modifying
     @Query("""
@@ -24,14 +29,14 @@ public interface ITokensRepository extends JpaRepository<Tokens, Long> {
     @Query("""
         SELECT t
         FROM Tokens t
-        WHERE t.assignedTo = :user AND t.revoked = false
+        WHERE t.assignedTo.id =:user_id AND t.revoked=false
     """)
-    Tokens getCurrectTokenByUser(@Param("user") User user);
+    Tokens getCurrentTokenByUser(@Param("user_id") Long user_id);
 
     @Query("""
         SELECT COUNT(*) >= 1
         FROM Tokens t
-        WHERE t.assignedTo =:user AND t.revoked = false
+        WHERE t.assignedTo.id =:user_id AND t.revoked = false
     """)
-    Boolean existsAnActiveToken(@Param("user") User user);
+    Boolean existsAnActiveToken(@Param("user_id") Long user_id);
 }

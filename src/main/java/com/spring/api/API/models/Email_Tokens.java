@@ -37,7 +37,7 @@ public class Email_Tokens {
     @Column(name = "expire_at", nullable = false)
     private OffsetDateTime expire_at;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to", nullable = false)
     private User assignedTo;
 

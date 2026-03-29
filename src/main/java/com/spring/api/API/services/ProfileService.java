@@ -1,10 +1,13 @@
 package com.spring.api.API.services;
 
 import com.spring.api.API.Repositories.IFollowsRepository;
+import com.spring.api.API.Repositories.IPostsRepository;
 import com.spring.api.API.Repositories.IProfileRepository;
 import com.spring.api.API.Repositories.IUserRepository;
+import com.spring.api.API.models.DTOs.Posts.PostResponse;
 import com.spring.api.API.models.DTOs.Profile.CreateProfileDTO;
 import com.spring.api.API.models.DTOs.Profile.ProfileResponseDTO;
+import com.spring.api.API.models.DTOs.Profile.ProfileStats;
 import com.spring.api.API.models.Follows;
 import com.spring.api.API.models.Profiles;
 import com.spring.api.API.models.User;
@@ -12,6 +15,10 @@ import com.spring.api.API.security.Exceptions.ProfilePrivateException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -19,24 +26,23 @@ public class ProfileService {
 
     private final IProfileRepository repository;
     private final IUserRepository userRepository;
-    private final IFollowsRepository followsRepository;
+    private final IPostsRepository postsRepository;
 
     public ProfileService(
             IProfileRepository repository,
             IUserRepository userRepository,
-            IFollowsRepository followsRepository
+            IPostsRepository postsRepository
     ){
         this.repository = repository;
         this.userRepository = userRepository;
-        this.followsRepository = followsRepository;
+        this.postsRepository = postsRepository;
     }
 
     @Transactional
     public ProfileResponseDTO create(CreateProfileDTO profileDTO) {
         Profiles new_profile = new Profiles(profileDTO);
 
-        User user = this.userRepository.findById(profileDTO.getUser_id())
-                .orElseThrow();
+        User user = this.userRepository.getReferenceById(profileDTO.getUser_id());
         new_profile.setUser(user);
 
         try {
@@ -47,6 +53,7 @@ public class ProfileService {
                     create.getLastname(),
                     create.getBirthday(),
                     create.getAvatar_url(),
+                    create.getBio(),
                     create.getPrivateField()
             );
         } catch (Exception e) {
@@ -54,70 +61,100 @@ public class ProfileService {
         }
     }
 
+    @Transactional(readOnly = true)
     public ProfileResponseDTO my_profile(String username){
-        Profiles profile = this.repository.findProfilesByUserUsername(username)
+        Long user_id = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        return new ProfileResponseDTO(
-                profile.getProfile_id(),
-                profile.getName(),
-                profile.getLastname(),
-                profile.getBirthday(),
-                profile.getAvatar_url(),
-                profile.getPrivateField()
-        );
+        return this.repository.getProfileResponseByUserId(user_id);
     }
 
     @Transactional(readOnly = true)
     public ProfileResponseDTO search_profile(String target, String currentUser){
-        Profiles profile = this.repository.findProfilesByUserUsername(target)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        User targetUser = this.userRepository.findByUsername(target)
+                .orElseThrow();
 
-         User user = this.userRepository.findByUsername(currentUser)
-                 .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
-
-        Optional<Follows> follow = this.followsRepository.
-                findByFollowerIdAndFollowedId(profile.getUser().getId(), user.getId());
-
-        if (profile.getPrivateField() && follow.isEmpty()){
-            throw new ProfilePrivateException("Private profile");
-        }
-
-        return new ProfileResponseDTO(
-                profile.getProfile_id(),
-                profile.getName(),
-                profile.getLastname(),
-                profile.getBirthday(),
-                profile.getAvatar_url(),
-                profile.getPrivateField()
-        );
-    }
-
-    @Transactional
-    public String follow_user(String target, String currentUser){
-        Profiles profile = this.repository.findProfilesByUserUsername(target)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        User user = this.userRepository.findByUsername(currentUser)
+        Long user_id = this.userRepository.getIdByUsername(currentUser)
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
 
-        String status = "active";
+        if (this.repository.isPrivate(targetUser.getId())) {
+            boolean isFollowing = targetUser.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(user_id));
 
-        if (profile.getPrivateField()){
-            status = "pending";
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
         }
 
-        Follows follow = new Follows(
-                user,
-                profile.getUser(),
-                status
-        );
+        return this.repository.getProfileResponseByUserId(targetUser.getId());
+    }
 
-        if (this.followsRepository.existsByFollowerIdAndFollowedId(user.getId(), profile.getUser().getId())){
-            this.followsRepository.delete(follow);
-            return "Unfollow";
+    @Transactional(readOnly = true)
+    public List<PostResponse> search_profile_posts(String target, String username){
+        Long targetUser_id = this.userRepository.getIdByUsername(target)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Long curr_user_id = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+
+        User targetUser = this.userRepository.getReferenceById(targetUser_id);
+
+        if (this.repository.isPrivate(targetUser.getId())) {
+            boolean isFollowing = targetUser.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(curr_user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
         }
-        this.followsRepository.save(follow);
-        return "Following";
+
+        return this.postsRepository.findPosts(targetUser.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public List<PostResponse> search_profile_posts_liked(String target, String username){
+        Long targetUser_id = this.userRepository.getIdByUsername(target)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Long curr_user_id = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+
+        User targetUser = this.userRepository.getReferenceById(targetUser_id);
+
+        if (this.repository.isPrivate(targetUser.getId())) {
+            boolean isFollowing = targetUser.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(curr_user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
+        }
+
+        return this.postsRepository.findPostResponseByIdLikedPosts(targetUser.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileStats get_profile_stats(String target, String username){
+        Long targetUser_id = this.userRepository.getIdByUsername(target)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Long curr_user_id = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+
+        User targetUser = this.userRepository.getReferenceById(targetUser_id);
+
+        if (this.repository.isPrivate(targetUser.getId())) {
+            boolean isFollowing = targetUser.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(curr_user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
+        }
+        return this.repository.getProfileStats(targetUser_id);
     }
 }

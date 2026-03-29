@@ -33,16 +33,17 @@ public class TokenService {
     public String create(String username){
         String token;
         long start = System.currentTimeMillis();
-        User user = this.userRepository.findByUsername(username)
+        Long user_id = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));        
 
-        if(this.repository.existsAnActiveToken(user)){
-            Tokens currentToken = this.repository.getCurrectTokenByUser(user);
+        if(this.repository.existsAnActiveToken(user_id)){
+            Tokens currentToken = this.repository.getCurrentTokenByUser(user_id);
             currentToken.setRevoked(true);
             this.repository.saveAndFlush(currentToken);
         }
 
         token = UUID.randomUUID().toString();
+        User user = this.userRepository.getReferenceById(user_id);
 
         Tokens new_token = new Tokens();
         new_token.setTokenHash(token);

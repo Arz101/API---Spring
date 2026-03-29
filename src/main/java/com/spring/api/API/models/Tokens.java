@@ -37,7 +37,7 @@ public class Tokens {
     private OffsetDateTime expireAt;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_to", nullable = false)
     private User assignedTo;
 

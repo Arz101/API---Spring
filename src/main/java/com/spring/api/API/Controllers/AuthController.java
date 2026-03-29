@@ -1,6 +1,7 @@
 package com.spring.api.API.Controllers;
 
 import com.spring.api.API.models.DTOs.Auth.AccountTokenRequest;
+import com.spring.api.API.models.DTOs.Auth.AuthRequest;
 import com.spring.api.API.models.DTOs.Auth.AuthResponse;
 import com.spring.api.API.models.DTOs.Auth.TokenRequest;
 import com.spring.api.API.services.JWTService;
@@ -39,13 +40,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password){
+    public ResponseEntity<?> login(@Valid @RequestBody() AuthRequest login){
         long start = System.currentTimeMillis();
 
         org.springframework.security.core.Authentication auth = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-                username,
-                password
+                login.getUsername(),
+                login.getPassword()
             )
         );
 
@@ -54,7 +55,7 @@ public class AuthController {
         System.out.println("AUTH: " + (System.currentTimeMillis() - start));
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(
                 jwtService.generateToken(user),
-                this.tokenService.create(username)
+                this.tokenService.create(login.getUsername())
         ));
     }
 

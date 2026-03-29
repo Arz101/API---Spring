@@ -1,6 +1,7 @@
 package com.spring.api.API.models;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
 
@@ -23,18 +24,19 @@ public class Follows {
     @EmbeddedId
     private FollowsId id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("followerId")
     @JoinColumn(name = "follower_id")
     private User follower;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("followedId")
     @JoinColumn(name = "followed_id")
     private User followed;
 
+    @ColumnDefault("now()")
     @Column(name = "follow_date")
-    private OffsetDateTime followDate;
+    private OffsetDateTime followDate = OffsetDateTime.now();
 
     @Column(name = "status")
     private String status;

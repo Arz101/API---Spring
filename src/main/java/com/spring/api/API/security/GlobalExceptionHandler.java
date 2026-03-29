@@ -1,12 +1,6 @@
 package com.spring.api.API.security;
 
-import com.spring.api.API.security.Exceptions.AccountException;
-import com.spring.api.API.security.Exceptions.EmailException;
-import com.spring.api.API.security.Exceptions.InvalidTokenException;
-import com.spring.api.API.security.Exceptions.PostNotFoundException;
-import com.spring.api.API.security.Exceptions.ProfilePrivateException;
-import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
-import com.spring.api.API.security.Exceptions.UserNotFoundException;
+import com.spring.api.API.security.Exceptions.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -97,4 +91,15 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+
+    @ExceptionHandler(PostsActionsUnauthorized.class)
+    public ResponseEntity<?> PostActionHandleException(PostsActionsUnauthorized e){
+        Map<String, String> error = new HashMap<>();
+        error.put("message", e.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(error);
+    }
+
 }

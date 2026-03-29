@@ -1,20 +1,15 @@
 package com.spring.api.API.Controllers;
 
+import com.spring.api.API.models.DTOs.Comments.UpdateCommentDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.spring.api.API.models.DTOs.Comments.CommentsCreateDTO;
 import com.spring.api.API.services.CommentsService;
 
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PutMapping;
 
 
 @RestController
@@ -37,10 +32,13 @@ public class CommentsController {
         return ResponseEntity.status(HttpStatus.OK).body(this.service.deleteComment(comment_id, auth.getName()));
     }
 
-    @PutMapping("path/{id}")
-    public String putMethodName(@PathVariable String id, @RequestBody String entity) {
-        
-        
-        return entity;
+    @GetMapping("/find/{post_id}")
+    public ResponseEntity<?> getCommentsFromPost(@PathVariable("post_id") Long post_id, Authentication auth){
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.findCommentsByPostId(post_id));
+    }
+
+    @PatchMapping("/{comment_id}")
+    public ResponseEntity<?> updateComment(@Valid @RequestBody()UpdateCommentDTO data, Authentication auth){
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.updateComment(data, auth.getName()));
     }
 }

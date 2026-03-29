@@ -2,16 +2,8 @@ package com.spring.api.API.models;
 
 import java.time.OffsetDateTime;
 
+import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "likes")
@@ -20,11 +12,11 @@ public class Likes {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "publication_id")
     private Posts post;
 
@@ -32,10 +24,7 @@ public class Likes {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime created_at;
 
-    protected Likes() {
-    }
-
-    
+    protected Likes() {}
 
     public Likes(User user, Posts post) {
         this.user = user;

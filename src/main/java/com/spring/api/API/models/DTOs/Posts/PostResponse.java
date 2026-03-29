@@ -11,6 +11,7 @@ public class PostResponse {
     private String picture;
     private String username;
     private Long likes;
+    private Long comments;
     private OffsetDateTime datecreated;
     public PostResponse(
         Long id,
@@ -18,6 +19,7 @@ public class PostResponse {
         String picture,
         String username,
         Long likes,
+        Long comments,
         OffsetDateTime datecreated
     ) {
         this.id = id;
@@ -25,6 +27,7 @@ public class PostResponse {
         this.picture = picture;
         this.username = username;
         this.likes = likes;
+        this.comments = comments;
         this.datecreated = datecreated;
     }
 }

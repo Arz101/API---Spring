@@ -1,6 +1,7 @@
 package com.spring.api.API.security;
 
 import com.spring.api.API.Repositories.IUserRepository;
+import com.spring.api.API.models.DTOs.Auth.UserDetailCredentials;
 import com.spring.api.API.models.User;
 import com.spring.api.API.security.Exceptions.AccountException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,7 +21,7 @@ public class UserDetailsServiceHandler implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = this.repository.findByUsername(username)
+        UserDetailCredentials user = this.repository.getCredentials(username)
                 .orElseThrow(() -> new UsernameNotFoundException("INVALID CREDENTIALS"));
 
         if (!user.getStatus().equals("active"))

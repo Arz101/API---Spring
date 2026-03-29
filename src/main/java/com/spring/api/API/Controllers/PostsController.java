@@ -44,12 +44,12 @@ public class PostsController {
 
     @PostMapping("/like/{post_id}")
     public ResponseEntity<?> likePost(@PathVariable Long post_id, Authentication auth) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(        this.service.setLike(post_id, auth.getName()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.setLike(post_id, auth.getName()));
     }
 
     @PatchMapping("/{post_id}")
-    public ResponseEntity<?> updatePost(@PathVariable Long post_id, @RequestBody() UpdatePostDTO data, Authentication auth){
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.service.updatePost(data, post_id));
+    public ResponseEntity<?> updatePost(@Valid @PathVariable Long post_id, @RequestBody() UpdatePostDTO data, Authentication auth){
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.service.updatePost(data, post_id, auth.getName()));
     }
 
     @DeleteMapping("/{post_id}")
