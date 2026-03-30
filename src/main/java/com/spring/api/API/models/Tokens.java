@@ -3,10 +3,14 @@ package com.spring.api.API.models;
 import com.spring.api.API.models.DTOs.Tokens.TokenCreateDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.OffsetDateTime;
 
+@Getter
+@Setter
 @Entity
 @Table (
         name = "tokens",
@@ -50,60 +54,12 @@ public class Tokens {
     private Boolean revoked;
 
     public Tokens(TokenCreateDTO tokenCreateDTO){
-        this.tokenHash = tokenCreateDTO.getToken_hash();
+        this.tokenHash = tokenCreateDTO.token_hash();
         this.expireAt = (OffsetDateTime.now().plusHours(1));
-        this.assignedTo = tokenCreateDTO.getAssigned_to();
-        this.tokenType = tokenCreateDTO.getToken_type();
-        this.revoked = tokenCreateDTO.getRevoked();
+        this.assignedTo = tokenCreateDTO.assigned_to();
+        this.tokenType = tokenCreateDTO.token_type();
+        this.revoked = tokenCreateDTO.revoked();
     }
 
     public Tokens(){}
-
-    public String getTokenHash() {
-        return tokenHash;
-    }
-
-    public void setTokenHash(String tokenHash) {
-        this.tokenHash = tokenHash;
-    }
-
-    public OffsetDateTime getDateCreate() {
-        return dateCreate;
-    }
-
-    public void setDateCreate(OffsetDateTime dateCreate) {
-        this.dateCreate = dateCreate;
-    }
-
-    public OffsetDateTime getExpireAt() {
-        return expireAt;
-    }
-
-    public void setExpireAt(OffsetDateTime expireAt) {
-        this.expireAt = expireAt;
-    }
-
-    public User getAssignedTo() {
-        return assignedTo;
-    }
-
-    public void setAssignedTo(User assignedTo) {
-        this.assignedTo = assignedTo;
-    }
-
-    public Short getTokenType(int i) {
-        return tokenType;
-    }
-
-    public void setTokenType(Short tokenType) {
-        this.tokenType = tokenType;
-    }
-
-    public Boolean getRevoked() {
-        return revoked;
-    }
-
-    public void setRevoked(Boolean revoked) {
-        this.revoked = revoked;
-    }
 }

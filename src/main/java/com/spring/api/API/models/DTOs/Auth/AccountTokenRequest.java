@@ -5,11 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AccountTokenRequest {
+public record AccountTokenRequest (
     @NotBlank
-    private String token;
-}
+    String token
+) {}
     

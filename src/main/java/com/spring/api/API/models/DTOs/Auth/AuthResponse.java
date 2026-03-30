@@ -4,10 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponse {
-    String access_token;
-    String refresh_token;
-}
+public record AuthResponse (
+    String access_token,
+    String refresh_token
+){}

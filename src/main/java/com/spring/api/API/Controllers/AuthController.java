@@ -45,8 +45,8 @@ public class AuthController {
 
         org.springframework.security.core.Authentication auth = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-                login.getUsername(),
-                login.getPassword()
+                login.username(),
+                login.password()
             )
         );
 
@@ -55,13 +55,13 @@ public class AuthController {
         System.out.println("AUTH: " + (System.currentTimeMillis() - start));
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(
                 jwtService.generateToken(user),
-                this.tokenService.create(login.getUsername())
+                this.tokenService.create(login.username())
         ));
     }
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refresh_token(@Valid @RequestBody() TokenRequest token){
-        String username = this.tokenService.validate_refresh_token(token.getRefresh_token());
+        String username = this.tokenService.validate_refresh_token(token.refresh_token());
         UserDetails user =
                 userDetailsService.loadUserByUsername(username);
 
@@ -73,7 +73,7 @@ public class AuthController {
 
     @PostMapping("/active-account")
     public ResponseEntity<?> postMethodName(@Valid @RequestBody AccountTokenRequest email_token) {
-        this.tokenService.validateEmailToken(email_token.getToken());    
+        this.tokenService.validateEmailToken(email_token.token());
         return ResponseEntity.status(HttpStatus.OK).body("Account activated successfully");
     }
     

@@ -46,13 +46,13 @@ public class CommentsService {
         User curr = this.userRepository.findByUsername(username)
             .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
         
-        Posts post = this.postsRepository.findById(comment.getPost_id())
+        Posts post = this.postsRepository.findById(comment.post_id())
             .orElseThrow(() -> new PostNotFoundException("Post not found"));
         
         Comments new_comment = this.repository.save(new Comments(
             post,
             curr,
-            comment.getContent()
+            comment.content()
         ));
 
         if (!post.getUser().getId().equals(curr.getId())) {
@@ -89,10 +89,10 @@ public class CommentsService {
         Long user_id = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Comments comment = this.repository.findCommentByUserIdAndCommentId(user_id, data.getId())
+        Comments comment = this.repository.findCommentByUserIdAndCommentId(user_id, data.id())
                 .orElseThrow(() -> new CommentsActionsUnauthorized("Unauthorized Actions"));
 
-        comment.setContent(data.getContent());
+        comment.setContent(data.content());
         Comments comment_mod = this.repository.save(comment);
 
         return new CommentsResponse(

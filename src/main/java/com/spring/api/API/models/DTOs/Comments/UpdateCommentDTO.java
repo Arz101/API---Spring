@@ -6,13 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class UpdateCommentDTO {
-    @NotNull
-    private Long id;
-
-    @NotBlank
-    private String content;
-}
+public record UpdateCommentDTO (
+    @NotNull Long id,
+    @NotBlank String content
+) {}

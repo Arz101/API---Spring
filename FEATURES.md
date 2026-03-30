@@ -1,19 +1,21 @@
 # Features Planificadas
 
 ## Sistema de Privacidad
-- [ ] Posts Privados
-- [ ] Perfil privado
-- [ ] Visibilidad solo para seguidores
-- [ ] Comentarios solo si el posts es publico 
+- ✅ Posts Privados
+- ✅ Perfil privado
+- ✅ Visibilidad solo para seguidores
+- ✅ Comentarios solo si el posts es publico 
 
 ## Sistema de Feed
 - [ ] Agregar endpoints para traer posts de diferentes fuentes
     - [ ] posts de amigos que dieron like
     - [ ] posts con muchos likes
-- ✅ Registrar interacciones del usuario con Posts
+    - [ ] posts por hashtags
+- ✅ Registrar interacciones de usuario con Posts
 
 ## Hashtags
-- [ ] Agregar sistema de Hashtag y recomendacion basica
+- ✅ Agregar sistema de Hashtag 
+- [ ] Recomendacion basica
 
 ## Sistema de Comentarios
 - ✅ Crear endpoint para agregar comentarios a posts
@@ -23,6 +25,11 @@
 - ✅ Validar permisos de usuario
 - ✅ Modelo/DTO para comentarios
 - ✅ Repositorio para comentarios en base de datos
+
+## Sistema de Amigos
+- [ ] Recomendacion de personas que quizas conozcas basado en tus seguidores
+- [ ] Recomedaciones de seguidis por seguidores
+- [ ]
 
 ## Guardar Posts
 - [ ] Endpoint para guardar/favoritar posts

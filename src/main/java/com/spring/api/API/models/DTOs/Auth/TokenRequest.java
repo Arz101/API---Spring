@@ -5,10 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class TokenRequest {
-    @NotBlank
-    private String refresh_token;
-}
+public record TokenRequest (
+    @NotBlank String refresh_token
+) {}

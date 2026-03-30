@@ -5,12 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthRequest {
-    @NotBlank
-    String username;
-    @NotBlank
-    String password;
-}
+public record AuthRequest (
+    @NotBlank String username,
+    @NotBlank String password
+) {}

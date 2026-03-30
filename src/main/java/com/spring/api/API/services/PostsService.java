@@ -1,26 +1,20 @@
 package com.spring.api.API.services;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import com.spring.api.API.Repositories.*;
+import com.spring.api.API.models.*;
+import com.spring.api.API.models.DTOs.Posts.*;
 import com.spring.api.API.security.Exceptions.PostsActionsUnauthorized;
+import com.spring.api.API.security.Exceptions.ProfilePrivateException;
 import org.springframework.stereotype.Service;
-import com.spring.api.API.Repositories.IFollowsRepository;
-import com.spring.api.API.Repositories.ILikeRepository;
-import com.spring.api.API.Repositories.IPostViewedRepository;
-import com.spring.api.API.Repositories.IPostsRepository;
-import com.spring.api.API.Repositories.IUserRepository;
-import com.spring.api.API.models.Likes;
-import com.spring.api.API.models.PostViewed;
-import com.spring.api.API.models.Posts;
-import com.spring.api.API.models.User;
-import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
-import com.spring.api.API.models.DTOs.Posts.PostResponse;
-import com.spring.api.API.models.DTOs.Posts.UpdatePostDTO;
 import com.spring.api.API.security.Exceptions.PostNotFoundException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class PostsService {
@@ -29,27 +23,47 @@ public class PostsService {
     private final IFollowsRepository followsRepository;
     private final IUserRepository userRepository;
     private final IPostViewedRepository postViewedRepository;
+    private final IProfileRepository profileRepository;
+    private final IHashTagsRepository hashTagsRepository;
+    private static final Logger log = LoggerFactory.getLogger(PostsService.class);
 
     public PostsService(IPostsRepository repository,
         ILikeRepository likeRepository,
         IFollowsRepository followsRepository,
         IUserRepository userRepository,
-        IPostViewedRepository postViewedRepository
+        IPostViewedRepository postViewedRepository,
+        IProfileRepository profileRepository,
+        IHashTagsRepository hashTagsRepository
     ) {
         this.repository = repository;
         this.likeRepository = likeRepository;
         this.followsRepository = followsRepository;
         this.userRepository = userRepository;
         this.postViewedRepository = postViewedRepository;
+        this.profileRepository = profileRepository;
+        this.hashTagsRepository = hashTagsRepository;
     }
 
     @Transactional
     public PostResponse create(CreatePostDTO dto, String username) {
-        Long user_id = this.userRepository.getIdByUsername(username)
+        var user_id = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Posts post = this.repository.save(new Posts(
-            dto, this.userRepository.getReferenceById(user_id)
+        Set<Hashtags> hashtags = new HashSet<>();
+        if(!dto.hashtags().isEmpty()){
+            hashtags = dto.hashtags()
+                    .stream().map(name -> this.hashTagsRepository.existsHashtag(name)
+                            .orElseGet(() -> this.hashTagsRepository.save(new Hashtags(name))))
+                    .collect(Collectors.toSet());
+
+            hashtags.forEach(hashtag -> {
+                hashtag.setPosts_count(hashtag.getPosts_count() + 1);
+                this.hashTagsRepository.save(hashtag);
+            });
+        }
+
+        var post = this.repository.save(new Posts(
+            dto, this.userRepository.getReferenceById(user_id), hashtags
         ));
 
         return new PostResponse(
@@ -64,28 +78,97 @@ public class PostsService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> getPostsByUsername(String username) {
-        Long user_id = this.userRepository.getIdByUsername(username)
+    public List<PostResponseWithHashtags> getMyPosts(String username) {
+        var user_id = this.userRepository.getIdByUsername(username)
             .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
 
-        return this.repository.findPosts(user_id);
+
+        var posts = this.repository.findPosts(user_id);
+        var hashtags = this.hashTagsRepository.getAllHashtagsByUserId(user_id);
+
+        var hashtags_mapped = hashtags.stream()
+                .collect(Collectors.groupingBy(
+                        HashtagsDTO::post_id,
+                        Collectors.mapping(HashtagsDTO::name, Collectors.toSet())
+                ));
+
+        var full_posts = posts.stream().map(post -> {
+            var hashes = hashtags_mapped.getOrDefault(post.id(), Set.of());
+            return new PostResponseWithHashtags(
+                    post, hashes
+            );
+
+        }).collect(Collectors.toList());
+        return full_posts;
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponse> feed(String username) {
-        List<Long> userIds = this.followsRepository.findFollowedUserIdsByFollowerUsername(username);
-        Pageable pageable = PageRequest.of(0, 20);
-        return this.repository.findFeed(userIds, pageable);
+    public List<PostResponseWithHashtags> get_user_posts(String target, String currentUser){
+        var target_id = this.verifyPrivateProfile(target, currentUser);
+
+        var posts = this.repository.findPosts(target_id);
+        var hashtags = this.hashTagsRepository.getAllHashtagsByUserId(target_id);
+
+        var hashtags_mapped = hashtags.stream()
+                .collect(Collectors.groupingBy(
+                        HashtagsDTO::post_id,
+                        Collectors.mapping(HashtagsDTO::name, Collectors.toSet())
+                ));
+
+        var full_posts = posts.stream().map(post -> {
+            var hashes = hashtags_mapped.getOrDefault(post.id(), Set.of());
+            return new PostResponseWithHashtags(
+                    post, hashes
+            );
+
+        }).collect(Collectors.toList());
+        return full_posts;
+    }
+
+    @Transactional(readOnly = true)
+    public List<?> feed(String username) {
+        var userIds = this.followsRepository.findFollowedUserIdsByFollowerUsername(username);
+        Pageable pageable = PageRequest.of(0, 50);
+
+        var hashtags = this.hashTagsRepository.getAllHashtagsByFollowingsId(userIds);
+        var posts = this.repository.findFeed(userIds, pageable);
+
+        var hashtags_mapped = hashtags.stream()
+                .collect(Collectors.groupingBy(
+                        HashtagsDTO::post_id,
+                        Collectors.mapping(HashtagsDTO::name, Collectors.toSet())
+                ));
+
+        var full_posts = posts.stream().map(post -> {
+            var hashes = hashtags_mapped.getOrDefault(post.id(), Set.of());
+            return new PostResponseWithHashtags(
+                    post, hashes
+            );
+
+        }).collect(Collectors.toList());
+        return full_posts;
     }
 
     @Transactional
     public Map<String,String> setLike(Long post_id, String username){
-        Posts post = this.repository.getReferenceById(post_id);
+        var post = this.repository.getReferenceById(post_id);
 
-        Long user_id = this.userRepository.getIdByUsername(username)
+        var user_id = this.userRepository.getIdByUsername(username)
             .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
 
-        User user = this.userRepository.getReferenceById(user_id);
+        var user = this.userRepository.getReferenceById(user_id);
+
+        var owner = this.userRepository.getReferenceById(post.getUser().getId());
+
+        if (this.profileRepository.isPrivate(owner.getId())) {
+            boolean isFollowing = owner.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
+        }
 
         if(!this.likeRepository.findLikeByUserAndPost(user_id, post_id)) {
             this.likeRepository.save(new Likes(user, post));
@@ -109,7 +192,7 @@ public class PostsService {
         Posts post = this.repository.findPostByUserAndPostId(user_id, post_id)
                 .orElseThrow(() -> new PostsActionsUnauthorized("Unauthorized Action"));
 
-        post.setDescription(data.getDescription());
+        post.setDescription(data.description());
         
         this.repository.save(post);
         return this.repository.findPostResponseById(post.getId())
@@ -136,8 +219,59 @@ public class PostsService {
     }
 
     @Transactional(readOnly = true)
-    public PostResponse findPostById(Long post_id){
+    public PostResponse findPostById(Long post_id, String currentUser){
         return this.repository.findPostResponseById(post_id)
             .orElseThrow(() -> new PostNotFoundException("Not found"));
     }
+
+    @Transactional(readOnly = true)
+    public PostResponseWithHashtags getPostsWithHashTags(long post_id, String username){
+        Long current_user_id = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Posts target_posts = this.repository.getReferenceById(post_id);
+
+        User owner_posts = this.userRepository.getReferenceById(target_posts.getUser().getId());
+
+        if (this.profileRepository.isPrivate(target_posts.getUser().getId())) {
+            boolean isFollowing = owner_posts.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(current_user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
+        }
+
+        PostResponse postResponse = this.repository.findPostResponseById(post_id)
+                .orElseThrow(() -> new PostNotFoundException("Not found"));
+
+        Set<String> hashtags = this.hashTagsRepository.getHashtagsByPostId(post_id);
+
+        return new PostResponseWithHashtags(
+                postResponse,
+                hashtags
+        );
+    }
+
+    @Transactional(readOnly = true)
+    private Long verifyPrivateProfile(String target, String currentUser){
+        User targetUser = this.userRepository.findByUsername(target)
+                .orElseThrow();
+
+        Long user_id = this.userRepository.getIdByUsername(currentUser)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+
+        if (this.profileRepository.isPrivate(targetUser.getId())) {
+            boolean isFollowing = targetUser.getFollowers()
+                    .stream()
+                    .anyMatch(t -> t.getFollower().getId().equals(user_id));
+
+            if (!isFollowing) {
+                throw new ProfilePrivateException("This account is private");
+            }
+        }
+        return targetUser.getId();
+    }
+
 }

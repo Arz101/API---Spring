@@ -2,7 +2,6 @@ package com.spring.api.API.security;
 
 import com.spring.api.API.Repositories.IUserRepository;
 import com.spring.api.API.models.DTOs.Auth.UserDetailCredentials;
-import com.spring.api.API.models.User;
 import com.spring.api.API.security.Exceptions.AccountException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -24,12 +23,12 @@ public class UserDetailsServiceHandler implements UserDetailsService {
         UserDetailCredentials user = this.repository.getCredentials(username)
                 .orElseThrow(() -> new UsernameNotFoundException("INVALID CREDENTIALS"));
 
-        if (!user.getStatus().equals("active"))
+        if (!user.status().equals("active"))
             throw new AccountException("Account is not active, check your email for confirmation");
         
         return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
+                user.username(),
+                user.password(),
                 new ArrayList<>()
         );
     }

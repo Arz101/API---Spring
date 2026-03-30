@@ -3,11 +3,16 @@ package com.spring.api.API.models;
 import java.time.OffsetDateTime;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+@Getter
+@Setter
 @Entity
 @Table(
-    name = "postviewed"
+    name = "postviewed",
+    uniqueConstraints = @UniqueConstraint(columnNames = {"post_id", "user_id"})
 )
 public class PostViewed {
     @Id
@@ -30,38 +35,5 @@ public class PostViewed {
         this.post = post;
         this.user = user;
     }
-
     protected PostViewed(){}
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Posts getPost() {
-        return post;
-    }
-
-    public void setPost(Posts post) {
-        this.post = post;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public OffsetDateTime getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(OffsetDateTime dateCreated) {
-        this.dateCreated = dateCreated;
-    }
 }

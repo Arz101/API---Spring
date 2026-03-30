@@ -35,17 +35,17 @@ public class ProfileController {
     }
 
     @GetMapping("/{username}/posts")
-    public ResponseEntity <?> search_profile_posts(@PathVariable("username") String username, Authentication auth){
+    public ResponseEntity <?> search_profile_posts(@PathVariable("username") String username, @NonNull Authentication auth){
         return ResponseEntity.status(HttpStatus.OK).body(this.service.search_profile_posts(username, auth.getName()));
     }
 
     @GetMapping("/{username}/likes")
-    public ResponseEntity <?> search_profile_posts_liked(@PathVariable("username") String username, Authentication auth){
+    public ResponseEntity <?> search_profile_posts_liked(@PathVariable("username") String username, @NonNull Authentication auth){
         return ResponseEntity.status(HttpStatus.OK).body(this.service.search_profile_posts_liked(username, auth.getName()));
     }
 
     @GetMapping("/{username}/stats")
-    public ResponseEntity<?> get_profile_stats(@PathVariable("username") String username, Authentication auth){
+    public ResponseEntity<?> get_profile_stats(@PathVariable("username") String username, @NonNull Authentication auth){
         return ResponseEntity.status(HttpStatus.OK).body(this.service.get_profile_stats(username, auth.getName()));
     }
 }

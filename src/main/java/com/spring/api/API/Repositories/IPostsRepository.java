@@ -4,6 +4,8 @@ import com.spring.api.API.models.Posts;
 import com.spring.api.API.models.DTOs.Posts.PostResponse;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -112,8 +114,8 @@ public interface IPostsRepository extends JpaRepository<Posts, Long> {
             p.description,
             p.picture,
             p.user.username,
-            COUNT(l.id),
-            COUNT(c.id),
+            COUNT(DISTINCT l.id),
+            COUNT(DISTINCT c.id),
             p.datecreated
         ) 
         FROM Posts p
@@ -127,7 +129,6 @@ public interface IPostsRepository extends JpaRepository<Posts, Long> {
            p.user.username,
            p.datecreated,
            l.created_at
-        ORDER BY l.created_at
    """)
     List<PostResponse> findPostResponseByIdLikedPosts(@Param("user_id") Long user_id);
 }

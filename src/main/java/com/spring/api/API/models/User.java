@@ -1,12 +1,9 @@
 package com.spring.api.API.models;
 
-
-import com.spring.api.API.models.DTOs.User.CreateUserDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,12 +52,11 @@ public class User {
     @OneToMany(mappedBy = "followed", fetch = FetchType.LAZY)
     private List<Follows> followeds = new ArrayList<>();
 
-    protected User() {}
-
-    public User(CreateUserDTO user){
-        this.username = user.getUsername();
-        this.email = user.getEmail();
-        this.password = user.getPassword();
-        this.status = user.getStatus();
+    protected User(){}
+    public User(String username, String email, String password, String status){
+        this.username = username;
+        this.email = email;
+        this.password = password;
+        this.status = status;
     }
 }

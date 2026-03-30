@@ -51,11 +51,11 @@ public class Profiles {
         private Boolean privateField;
 
         public Profiles(CreateProfileDTO profileDTO){
-                this.name = profileDTO.getName();
-                this.lastname = profileDTO.getLastname();
-                this.birthday = profileDTO.getBirthday();
-                this.avatar_url = profileDTO.getAvatar_url();
-                this.privateField = profileDTO.getPrivateField();
+                this.name = profileDTO.name();
+                this.lastname = profileDTO.lastname();
+                this.birthday = profileDTO.birthday();
+                this.avatar_url = profileDTO.avatar_url();
+                this.privateField = profileDTO.privateField();
         }
 
         public Profiles() {

@@ -5,16 +5,23 @@ import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
+@Getter
+@Setter
 @Entity
 @Table(
-        name = "posts",
-        indexes = {
-                @Index(name = "ix_Publications_id", columnList = "id")
-        }
+    name = "posts",
+    indexes = {
+            @Index(name = "ix_Publications_id", columnList = "id")
+    }
 )
 public class Posts {
     @Id
@@ -36,53 +43,22 @@ public class Posts {
 
     @ColumnDefault("now()")
     @Column(name = "datecreated")
-    private OffsetDateTime datecreated;
+    private OffsetDateTime datecreated = OffsetDateTime.now();
+
+    @ManyToMany
+    @JoinTable(
+            name = "post_hashtag",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id")
+    )
+    private Set<Hashtags> hashtags = new HashSet<>();
 
     public Posts(){}
 
-    public Posts(CreatePostDTO postsDTO, User user){
-        this.description = postsDTO.getDescription();
-        this.picture = postsDTO.getPicture();
+    public Posts(CreatePostDTO postsDTO, User user, Set<Hashtags> hashtags){
+        this.description = postsDTO.description();
+        this.picture = postsDTO.picture();
         this.user = user;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
-    }
-
-    public OffsetDateTime getDatecreated() {
-        return datecreated;
-    }
-
-    public void setDatecreated(OffsetDateTime datecreated) {
-        this.datecreated = datecreated;
+        this.hashtags = hashtags;
     }
 }

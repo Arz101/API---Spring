@@ -6,13 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class CommentsResponse {
-    private Long id;
-    private Long post_id;
-    private String username;
-    private String content;
-    private OffsetDateTime dateCreated;
-}
+public record CommentsResponse (
+    Long id,
+    Long post_id,
+    String username,
+    String content,
+    OffsetDateTime dateCreated
+) {}

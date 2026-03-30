@@ -6,19 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class CreateUserDTO {
-
-    @NotBlank
-    private String username;
-
-    @Email
-    private String email;
-
-    @NotBlank
-    private String password;
-
-    private String status = "pending";
+public record CreateUserDTO (
+    @NotBlank String username,
+    @Email String email,
+    @NotBlank String password,
+    String status
+) {
+    public CreateUserDTO{
+        if(status == null) status = "pending";
+    }
 }

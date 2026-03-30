@@ -1,33 +1,21 @@
 package com.spring.api.API.models;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
 
+@Getter
+@Setter
 @Embeddable
 public class FollowsId implements Serializable {
 
     private Long followerId;
     private Long followedId;
 
-    public FollowsId() {}
-
-    public Long getFollowerId() {
-        return followerId;
-    }
-
-    public void setFollowerId(Long followerId) {
-        this.followerId = followerId;
-    }
-
-    public Long getFollowedId() {
-        return followedId;
-    }
-
-    public void setFollowedId(Long followedId) {
-        this.followedId = followedId;
-    }
+    protected FollowsId() {}
 
     public FollowsId(Long followerId, Long followedId) {
         this.followerId = followerId;

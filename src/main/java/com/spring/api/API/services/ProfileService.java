@@ -42,7 +42,7 @@ public class ProfileService {
     public ProfileResponseDTO create(CreateProfileDTO profileDTO) {
         Profiles new_profile = new Profiles(profileDTO);
 
-        User user = this.userRepository.getReferenceById(profileDTO.getUser_id());
+        User user = this.userRepository.getReferenceById(profileDTO.user_id());
         new_profile.setUser(user);
 
         try {

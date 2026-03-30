@@ -6,15 +6,12 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ProfileResponseDTO {
-    private Long profile_id;
-    private String name;
-    private String lastname;
-    private LocalDate birthday;
-    private String avatar_url;
-    private String bio;
-    private Boolean privateField;
-}
+public record ProfileResponseDTO(
+        Long profile_id,
+        String name,
+        String lastname,
+        LocalDate birthday,
+        String avatar_url,
+        String bio,
+        Boolean privateField
+){}

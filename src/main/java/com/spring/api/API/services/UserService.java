@@ -8,6 +8,7 @@ import com.spring.api.API.models.User;
 import com.spring.api.API.security.Exceptions.EmailException;
 import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,14 +31,19 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO create(CreateUserDTO user){
-        if (this.repository.existsByUsername(user.getUsername()) ||
-                this.repository.existsByEmail(user.getEmail()))
+    public UserResponseDTO create(@NonNull CreateUserDTO user){
+        if (this.repository.existsByUsername(user.username()) ||
+                this.repository.existsByEmail(user.email()))
             throw new UserAlreadyExistsException("User already exists");
 
-        user.setPassword(this.passwordEncoder.encode(user.getPassword()));
+        String encodedPassword = this.passwordEncoder.encode(user.password());
 
-        User new_user = repository.saveAndFlush(new User(user));
+        User new_user = repository.saveAndFlush(new User(
+                user.username(),
+                user.email(),
+                encodedPassword,
+                user.status()
+        ));
 
         String token = this.tokenService.saveAccountTokens(new_user);
 
@@ -84,13 +90,13 @@ public class UserService {
         User curr = this.repository.findByUsername(username)
             .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
         
-        if (this.repository.existsByUsername(new_data.getUsername())){
+        if (this.repository.existsByUsername(new_data.username())){
             throw new UserAlreadyExistsException("Username already in use");
         }
 
-        curr.setUsername(new_data.getUsername());
-        if (this.passwordEncoder.matches(new_data.getPassword(), curr.getPassword())){
-            curr.setPassword(this.passwordEncoder.encode((new_data.getPassword())));
+        curr.setUsername(new_data.username());
+        if (this.passwordEncoder.matches(new_data.password(), curr.getPassword())){
+            curr.setPassword(this.passwordEncoder.encode((new_data.new_password())));
         }
         this.repository.save(curr);
         return new UserResponseDTO(
