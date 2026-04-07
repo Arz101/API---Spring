@@ -51,6 +51,28 @@ public interface IPostsRepository extends JpaRepository<Posts, Long> {
     """)
     List<Posts> findByFollowingUsernames(List<String> followingUsernames);
 
+    @Query("""
+        SELECT new com.spring.api.API.models.DTOs.Posts.PostResponse(
+            p.id,
+            p.description,
+            p.picture,
+            p.user.username,
+            COUNT(l.id),
+            COUNT(c.id),
+            p.datecreated
+        )
+        FROM Posts p
+        LEFT JOIN Likes l ON l.post = p
+        LEFT JOIN Comments c ON c.post = p    
+        GROUP BY 
+            p.id,
+            p.description,
+            p.picture,
+            p.user.username,
+            p.datecreated
+    """)
+    List<PostResponse> getAllPosts();
+
 
     @Query("""
         SELECT new com.spring.api.API.models.DTOs.Posts.PostResponse(

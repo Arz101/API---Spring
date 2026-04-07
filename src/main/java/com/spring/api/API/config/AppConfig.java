@@ -2,10 +2,11 @@ package com.spring.api.API.config;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.spring.api.API.models.DTOs.User.UserRanking;
+import com.spring.api.API.models.DTOs.Posts.PostResponseWithHashtags;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +21,7 @@ public class AppConfig {
     }
 
     @Bean
-    public Cache<Long, UserRanking> userRankingCache() {
+    public Cache<Long, Set<PostResponseWithHashtags>> userRankingCache() {
         return Caffeine.newBuilder()
                 .maximumSize(10_000)
                 .expireAfterAccess(30, MINUTES)

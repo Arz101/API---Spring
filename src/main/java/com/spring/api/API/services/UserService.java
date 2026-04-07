@@ -5,8 +5,6 @@ import com.spring.api.API.Repositories.IFollowsRepository;
 import com.spring.api.API.Repositories.IUserRepository;
 import com.spring.api.API.models.BlockedUsers.BlockedUsers;
 import com.spring.api.API.models.DTOs.User.*;
-import com.spring.api.API.models.Follows.Follows;
-import com.spring.api.API.models.Follows.FollowsId;
 import com.spring.api.API.models.User;
 import com.spring.api.API.security.Exceptions.EmailException;
 import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
@@ -28,7 +26,7 @@ public class UserService {
     private final TokenService tokenService;
     private final IBlockedUsersRepository blockedUsersRepository;
     private final IFollowsRepository followsRepository;
-    private final FollowsGraph graph;
+    private final SocialRecommendationService graph;
 
     public UserService(IUserRepository userRepository,
                        PasswordEncoder passwordEncoder,
@@ -36,7 +34,7 @@ public class UserService {
                        TokenService tokenService,
                        IBlockedUsersRepository blockedUsersRepository,
                        IFollowsRepository followsRepository,
-                       FollowsGraph graph){
+                       SocialRecommendationService graph){
         this.repository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
@@ -164,7 +162,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserFound> usersFoundByText(String text, UserDetails user){
+    public List<UserFound> usersFoundByText(@NonNull String text, UserDetails user){
         return this.repository.usersFoundByText(text.toLowerCase());
     }
 }

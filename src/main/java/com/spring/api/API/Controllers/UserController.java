@@ -38,17 +38,20 @@ public class UserController {
     }
 
     @PatchMapping("/")
-    public ResponseEntity<?> updateByUsername(@Valid @RequestBody() UpdateUserDTO new_data, @NonNull Authentication auth) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.service.updateUser(new_data, auth.getName()));
+    public ResponseEntity<?> updateByUsername(@Valid @RequestBody() UpdateUserDTO new_data,
+                                              @NonNull @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(this.service.updateUser(new_data, user.getUsername()));
     }
 
     @PostMapping("/{userId}/block")
-    public ResponseEntity<?> blockUser(@PathVariable Long userId, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> blockUser(@PathVariable Long userId,
+                                       @AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(this.service.blockUser(userId, user));
     }
 
     @DeleteMapping("/{userId}/block")
-    public ResponseEntity<?> unblockUser(@PathVariable Long userId, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> unblockUser(@PathVariable Long userId,
+                                         @AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(this.service.unblockUser(userId, user));
     }
 
@@ -58,7 +61,8 @@ public class UserController {
     }
 
     @GetMapping("/find/{text}")
-    public ResponseEntity<?> findUsersByText(@PathVariable("text") String text, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> findUsersByText(@PathVariable("text") String text,
+                                             @AuthenticationPrincipal UserDetails user) {
         return ResponseEntity.ok(this.service.usersFoundByText(text, user));
     }
 }

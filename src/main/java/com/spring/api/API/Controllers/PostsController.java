@@ -37,43 +37,51 @@ public class PostsController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> myPosts(@NonNull Authentication auth) {
-        return ResponseEntity.ok(service.getMyPosts(auth.getName()));
+    public ResponseEntity<?> myPosts(@AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.getMyPosts(user.getUsername()));
     }
 
     @GetMapping("/timeline")
-    public ResponseEntity<?> timeline(@NonNull Authentication auth) {
-        return ResponseEntity.ok(service.timeLine(auth.getName()));
+    public ResponseEntity<?> timeline(@AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.timeLine(user.getUsername()));
     }
 
     @GetMapping("/feed")
-    public ResponseEntity<?> feed(@AuthenticationPrincipal UserDetails user){
-        return ResponseEntity.ok(this.service.feed(user));
+    public ResponseEntity<?> getFeed(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(this.service.feed(user, page, size));
     }
 
     @GetMapping
-    public ResponseEntity<?> userPosts(@RequestParam("username") String username, @NonNull Authentication auth) {
-        return ResponseEntity.ok(service.getUserPosts(username, auth.getName()));
+    public ResponseEntity<?> userPosts(@RequestParam("username") String username,
+                                       @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.getUserPosts(username, user.getUsername()));
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<?> likePost(@PathVariable long postId, @NonNull Authentication auth) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.setLike(postId, auth.getName()));
+    public ResponseEntity<?> likePost(@PathVariable long postId,
+                                      @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.setLike(postId, user.getUsername()));
     }
 
     @DeleteMapping("/{postId}/unlike")
-    public ResponseEntity<?> unlikePost(@PathVariable long postId, @NonNull Authentication auth) {
-        this.service.unlike(postId, auth.getName());
+    public ResponseEntity<?> unlikePost(@PathVariable long postId,
+                                        @AuthenticationPrincipal @NonNull UserDetails user) {
+        this.service.unlike(postId, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{postId}/save")
-    public ResponseEntity<?> savePosts(@PathVariable long postId, @AuthenticationPrincipal UserDetails user){
+    public ResponseEntity<?> savePosts(@PathVariable long postId,
+                                       @AuthenticationPrincipal UserDetails user){
         return ResponseEntity.ok(this.service.savePosts(postId, user));
     }
 
     @DeleteMapping("/{postId}/unsave")
-    public ResponseEntity<?> unsavePosts(@PathVariable long postId, @AuthenticationPrincipal UserDetails user) {
+    public ResponseEntity<?> unsavePosts(@PathVariable long postId,
+                                         @AuthenticationPrincipal UserDetails user) {
         this.service.unsavePosts(postId, user);
         return ResponseEntity.noContent().build();
     }
@@ -84,33 +92,51 @@ public class PostsController {
     }
 
     @PatchMapping("/{postId}")
-    public ResponseEntity<?> updatePost(@PathVariable long postId, @Valid @RequestBody UpdatePostDTO data, @NonNull Authentication auth) {
-        return ResponseEntity.ok(service.updatePost(data, postId, auth.getName()));
+    public ResponseEntity<?> updatePost(@PathVariable long postId,
+                                        @Valid @RequestBody UpdatePostDTO data,
+                                        @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.updatePost(data, postId, user.getUsername()));
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<?> deletePost(@PathVariable long postId, @NonNull Authentication auth) {
-        service.deletePost(postId, auth.getName());
+    public ResponseEntity<?> deletePost(@PathVariable long postId,
+                                        @AuthenticationPrincipal @NonNull UserDetails user) {
+        service.deletePost(postId, user.getUsername());
         return ResponseEntity.noContent().build();  // 204
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<?> getPostById(@PathVariable long postId, @NonNull Authentication auth) {
-        return ResponseEntity.ok(service.findPostById(postId, auth.getName()));
+    public ResponseEntity<?> getPostById(@PathVariable long postId,
+                                         @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.findPostById(postId, user.getUsername()));
     }
 
     @GetMapping("/{postId}/hashtags")
-    public ResponseEntity<?> getPostHashtags(@PathVariable long postId, @NonNull Authentication auth) {
-        return ResponseEntity.ok(service.getPostsWithHashTags(postId, auth.getName()));
+    public ResponseEntity<?> getPostHashtags(@PathVariable long postId,
+                                             @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.getPostsWithHashTags(postId, user.getUsername()));
     }
 
     @GetMapping("/hashtags/{hashtag}/popular")
-    public ResponseEntity<?> getPopularPostsByHashtag(@PathVariable("hashtag") String hashtag, @NonNull Authentication auth) {
-        return ResponseEntity.ok(service.mostPopularPostsByHashtag(hashtag, auth.getName()));
+    public ResponseEntity<?> getPopularPostsByHashtag(@PathVariable("hashtag") String hashtag,
+                                                      @AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.mostPopularPostsByHashtag(hashtag, user.getUsername()));
     }
 
     @GetMapping("/following/popular")
-    public ResponseEntity<?> getPopularPostsFromFollowing(@NonNull Authentication auth) {
-        return ResponseEntity.ok(service.popularPostsLikedByFolloweds(auth.getName()));
+    public ResponseEntity<?> getPopularPostsFromFollowing(@AuthenticationPrincipal @NonNull UserDetails user) {
+        return ResponseEntity.ok(service.popularPostsLikedByFolloweds(user.getUsername()));
     }
+
+    @GetMapping("/hashtags/{name}/related")
+    public ResponseEntity<?> getOccurrencesByHashtag(@PathVariable("name") String name,
+                                                     @AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.ok(service.getMostHashOccurrencesByHash(name));
+    }
+
+    @GetMapping("/hashtags/liked")
+    public ResponseEntity<?> getTagsLikedByUser(@AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.ok(this.service.tagsLikedByUser(user));
+    }
+
 }

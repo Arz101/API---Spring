@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.spring.api.API.Repositories.*;
 import com.spring.api.API.models.*;
 import com.spring.api.API.models.DTOs.Posts.*;
+import com.spring.api.API.models.Likes.Likes;
 import com.spring.api.API.models.PostsSaved.PostsSaved;
 import com.spring.api.API.security.Exceptions.PostsActionsUnauthorized;
 import com.spring.api.API.security.Exceptions.ProfilePrivateException;
@@ -29,7 +30,7 @@ public class PostsService {
     private final IProfileRepository profileRepository;
     private final IHashTagsRepository hashTagsRepository;
     private final StorageService storage;
-    private final RankingService rankingService;
+    private final FeedService feedService;
     private final IPostsSavedRepository postsSavedRepository;
 
     public PostsService(IPostsRepository repository,
@@ -40,7 +41,7 @@ public class PostsService {
                         IProfileRepository profileRepository,
                         IHashTagsRepository hashTagsRepository,
                         StorageService storage,
-                        RankingService rankingService,
+                        FeedService rankingService,
                         IPostsSavedRepository postsSavedRepository
     ) {
         this.repository = repository;
@@ -51,7 +52,7 @@ public class PostsService {
         this.profileRepository = profileRepository;
         this.hashTagsRepository = hashTagsRepository;
         this.storage = storage;
-        this.rankingService = rankingService;
+        this.feedService = rankingService;
         this.postsSavedRepository = postsSavedRepository;
     }
 
@@ -108,11 +109,13 @@ public class PostsService {
     }
 
     @Transactional(readOnly = true)
-    public List<PostResponseWithHashtags> getMyPosts(String username) {
+    public List<?> getMyPosts(String username) {
         var user_id = this.userRepository.getIdByUsername(username)
             .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
-        var posts = this.repository.findPosts(user_id);
-        return this.transformPostResponse(posts);
+        //var posts = this.repository.findPosts(user_id);
+        var posts = this.feedService.getPostsByMap(username);
+        //return this.transformPostResponse(posts);
+        return posts;
     }
 
     @Transactional(readOnly = true)
@@ -145,10 +148,10 @@ public class PostsService {
         }).collect(Collectors.toList());
     }
 
-    public List<?> feed (@NonNull UserDetails user){
+    public Set<?> feed (@NonNull UserDetails user, int page, int size){
         var userId = this.userRepository.getIdByUsername(user.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return this.rankingService.posts(userId);
+        return this.feedService.posts(user.getUsername(),userId, page, size);
     }
 
     @Transactional
@@ -173,7 +176,7 @@ public class PostsService {
         }
 
         if(!this.likeRepository.findLikeByUserAndPost(user_id, post_id)) {
-            this.likeRepository.save(new Likes(user, post));
+            this.likeRepository.save(new Likes(user_id, post_id));
         }
 
         if (!post.getUser().getId().equals(user_id) &&
@@ -387,5 +390,16 @@ public class PostsService {
             );
 
         }).collect(Collectors.toList());
+    }
+
+    public List<?> getMostHashOccurrencesByHash(String name){
+        return this.feedService.getMostHashOccurrencesByHash(name);
+    }
+
+    public List<?> tagsLikedByUser(@NonNull UserDetails user){
+        var userId = this.userRepository.getIdByUsername(user.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("Not found"));
+
+        return this.feedService.tagsLikedByUser(user.getUsername(), userId);
     }
 }

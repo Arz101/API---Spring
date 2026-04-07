@@ -43,8 +43,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody() @NonNull AuthRequest login){
-        long start = System.currentTimeMillis();
-
         org.springframework.security.core.Authentication auth = authenticationManager.authenticate(
         new UsernamePasswordAuthenticationToken(
                 login.username(),
@@ -53,8 +51,6 @@ public class AuthController {
         );
 
         UserDetails user = (UserDetails) auth.getPrincipal();
-
-        System.out.println("AUTH: " + (System.currentTimeMillis() - start));
         return ResponseEntity.status(HttpStatus.OK).body(new AuthResponse(
                 jwtService.generateToken(user),
                 this.tokenService.create(login.username())

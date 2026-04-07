@@ -15,6 +15,13 @@ public interface IHashTagsRepository extends JpaRepository<Hashtags, Long> {
     Optional<Hashtags> existsHashtag(@Param("name") String name);
 
     @Query("""
+        SELECT new com.spring.api.API.models.DTOs.Posts.HashtagsDTO(h.name, ph.id)
+        FROM Hashtags h
+        JOIN h.posts ph
+    """)
+    List<HashtagsDTO> getAllHashtagsByPosts();
+
+    @Query("""
        SELECT h.name
        FROM Hashtags h
        JOIN h.posts p

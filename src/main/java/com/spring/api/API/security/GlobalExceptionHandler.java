@@ -1,6 +1,7 @@
 package com.spring.api.API.security;
 
 import com.spring.api.API.security.Exceptions.*;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,7 +14,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception e){
+    public ResponseEntity<?> handleException(@NonNull Exception e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<?> UserExistsHandleException(UserAlreadyExistsException e){
+    public ResponseEntity<?> UserExistsHandleException(@NonNull UserAlreadyExistsException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<?> UserNotFoundHandleException(UserNotFoundException e){
+    public ResponseEntity<?> UserNotFoundHandleException(@NonNull UserNotFoundException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -43,7 +44,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<?> InvalidTokenHandleException(InvalidTokenException e){
+    public ResponseEntity<?> InvalidTokenHandleException(@NonNull InvalidTokenException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -53,7 +54,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ProfilePrivateException.class)
-    public ResponseEntity<?> InvalidTokenHandleException(ProfilePrivateException e){
+    public ResponseEntity<?> InvalidTokenHandleException(@NonNull ProfilePrivateException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -63,7 +64,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(EmailException.class)
-    public ResponseEntity<?> EmailHandleException(EmailException e){
+    public ResponseEntity<?> EmailHandleException(@NonNull EmailException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -73,7 +74,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(AccountException.class)
-    public ResponseEntity<?> AccountHandleException(AccountException e){
+    public ResponseEntity<?> AccountHandleException(@NonNull AccountException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -83,7 +84,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(PostNotFoundException.class)
-    public ResponseEntity<?> PostNotFoundHandleException(PostNotFoundException e){
+    public ResponseEntity<?> PostNotFoundHandleException(@NonNull PostNotFoundException e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
@@ -93,12 +94,22 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(PostsActionsUnauthorized.class)
-    public ResponseEntity<?> PostActionHandleException(PostsActionsUnauthorized e){
+    public ResponseEntity<?> PostActionHandleException(@NonNull PostsActionsUnauthorized e){
         Map<String, String> error = new HashMap<>();
         error.put("message", e.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.FORBIDDEN)
+                .body(error);
+    }
+
+    @ExceptionHandler(FollowNotFoundException.class)
+    public ResponseEntity<?> FollowNotFoundHandleException(@NonNull FollowNotFoundException e){
+        Map<String, String> error = new HashMap<>();
+        error.put("message", e.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
 

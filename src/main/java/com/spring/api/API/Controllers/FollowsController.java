@@ -20,23 +20,25 @@ public class FollowsController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> follow_user(@RequestParam("username") String username, @NonNull Authentication auth){
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.follow_user(username, auth.getName()));
+    public ResponseEntity<?> follow_user(@RequestParam("username") String username,
+                                         @AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.follow_user(username, user.getUsername()));
     }
 
     @GetMapping("/")
-    public ResponseEntity<?> getFollowersUsernames(@NonNull Authentication auth){
-        return ResponseEntity.status(HttpStatus.OK).body(this.service.getFollowerUsernames(auth.getName()));
+    public ResponseEntity<?> getFollowersUsernames(@AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.getFollowerUsernames(user.getUsername()));
     }
 
     @PostMapping("/accept/{userId}")
-    public ResponseEntity<?> acceptTrackingRequest(@PathVariable("userId") Long userId, @AuthenticationPrincipal UserDetails user){
+    public ResponseEntity<?> acceptTrackingRequest(@PathVariable("userId") Long userId,
+                                                   @AuthenticationPrincipal UserDetails user){
         return ResponseEntity.ok(this.service.acceptRequest(userId, user));
     }
 
     @GetMapping("/followings")
-    public ResponseEntity<?> getFollowingsUsernames(@NonNull Authentication auth){
-        return ResponseEntity.status(HttpStatus.OK).body(this.service.getFollowingsUsernames(auth.getName()));
+    public ResponseEntity<?> getFollowingsUsernames(@AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.getFollowingsUsernames(user.getUsername()));
     }
 
     @GetMapping("/suggestions")
@@ -45,13 +47,15 @@ public class FollowsController {
     }
 
     @DeleteMapping("/unfollow/{userId}")
-    public ResponseEntity<?> unfollowUser(@PathVariable("userId") Long userId, @NonNull Authentication auth){
-        this.service.unfollow(userId, auth.getName());
+    public ResponseEntity<?> unfollowUser(@PathVariable("userId") Long userId,
+                                          @AuthenticationPrincipal UserDetails user){
+        this.service.unfollow(userId, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{userId}/decline")
-    public ResponseEntity<?> declineFollowRequest(@Param("userId") Long userId, @AuthenticationPrincipal UserDetails user){
+    public ResponseEntity<?> declineFollowRequest(@Param("userId") Long userId,
+                                                  @AuthenticationPrincipal UserDetails user){
         return ResponseEntity.ok(this.service.declineFollowRequest(userId, user));
     }
 

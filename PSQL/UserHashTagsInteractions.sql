@@ -7,7 +7,7 @@ FROM post_hashtag ph
 INNER JOIN (
 	SELECT publication_id AS post_id, created_at 
 	FROM likes l
-	WHERE l.user_id = 8
+	WHERE l.user_id = 994
 	ORDER BY l.created_at DESC
 	LIMIT 100
 ) x ON x.post_id = ph.post_id
@@ -15,7 +15,7 @@ INNER JOIN hashtags h
 	ON h.id = ph.hashtag_id
 GROUP BY h.name
 ORDER BY hash DESC
-LIMIT 5
+LIMIT 5;
 
 -- Posts basados en Intereses Principales:
 

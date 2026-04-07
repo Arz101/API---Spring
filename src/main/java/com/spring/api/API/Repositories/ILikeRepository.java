@@ -1,10 +1,13 @@
 package com.spring.api.API.Repositories;
 
+import com.spring.api.API.models.DTOs.Posts.LikedBy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
-import com.spring.api.API.models.Likes;
+import com.spring.api.API.models.Likes.Likes;
 import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 
 public interface ILikeRepository extends JpaRepository<Likes, Long> {
@@ -28,5 +31,8 @@ public interface ILikeRepository extends JpaRepository<Likes, Long> {
     @Modifying
     @Query("DELETE FROM Likes l WHERE l.post.id =:postId")
     void deleteAllLikeByPostId(@Param("postId") Long postId);
+
+    @Query("SELECT new com.spring.api.API.models.DTOs.Posts.LikedBy(l.post.id, l.user.username, l.user.id) FROM Likes l")
+    List<LikedBy> allLikes();
 
 }

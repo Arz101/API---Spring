@@ -5,6 +5,7 @@ import com.spring.api.API.Repositories.IProfileRepository;
 import com.spring.api.API.Repositories.IUserRepository;
 import com.spring.api.API.models.Follows.Follows;
 import com.spring.api.API.models.User;
+import com.spring.api.API.security.Exceptions.FollowNotFoundException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -20,14 +21,14 @@ public class FollowService {
     private final IFollowsRepository repository;
     private final IUserRepository userRepository;
     private final IProfileRepository profileRepository;
-    private final FollowsGraph graph;
+    private final SocialRecommendationService graph;
     private static final Logger log = LoggerFactory.getLogger(FollowService.class);
 
     public FollowService(
             IFollowsRepository repository,
             IUserRepository userRepository,
             IProfileRepository profileRepository,
-            FollowsGraph graph
+            SocialRecommendationService graph
     ){
         this.repository = repository;
         this.userRepository = userRepository;
@@ -84,7 +85,7 @@ public class FollowService {
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
 
         var follow = this.repository.findByFollowerIdAndFollowedId(currentUser, userId)
-                .orElseThrow(() -> new RuntimeException("Follow not exists"));
+                .orElseThrow(() -> new FollowNotFoundException("Follow not exists"));
         this.repository.delete(follow);
     }
 
@@ -94,7 +95,7 @@ public class FollowService {
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
 
         var follow = this.repository.getFollowRequest(userId, followerId)
-                .orElseThrow(() -> new RuntimeException("Follow request not exists"));
+                .orElseThrow(() -> new FollowNotFoundException("Follow request not exists"));
 
         follow.setStatus("active");
         this.repository.save(follow);
@@ -108,7 +109,7 @@ public class FollowService {
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
 
         var follow = this.repository.getFollowRequest(userId, followerId)
-                .orElseThrow(() -> new RuntimeException("Follow request not exists"));
+                .orElseThrow(() -> new FollowNotFoundException("Follow request not exists"));
 
         this.repository.delete(follow);
         return Map.of("message","Declined successfully!");

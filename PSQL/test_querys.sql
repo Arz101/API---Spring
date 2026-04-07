@@ -23,7 +23,7 @@ GROUP BY
 	u.username,
 	pf.avatar_url
 ORDER BY ALL_LIKES DESC
-LIMIT(5)
+LIMIT(5);
 
 -- Trae el feed de un usuario: los posts de las cuentas que sigue, ordenados por fecha, 
 -- con likes y comentarios 
@@ -51,7 +51,7 @@ INNER JOIN follows fl
 		AND fl.follower_id = 994
 INNER JOIN users u ON u.id = p.user_id
 INNER JOIN count_likes cl ON cl.post_id = p.id
-LEFT JOIN count_comments cc ON cc.post_id = p.id
+LEFT JOIN count_comments cc ON cc.post_id = p.id;
 
 
 -- Dado un hashtag, trae los hashtags relacionados — es decir, 
@@ -65,18 +65,16 @@ SELECT
 	COUNT(*) occurrences
 FROM hashtags h
 INNER JOIN post_hashtag ph 
-	ON ph.hashtag_id = h.id AND ph.hashtag_id <> 64
+	ON ph.hashtag_id = h.id AND ph.hashtag_id <> 23
 INNER JOIN (
 	SELECT post_id FROM post_hashtag
-	WHERE hashtag_id = 64
+	WHERE hashtag_id = 23
 ) x ON ph.post_id = x.post_id
 GROUP BY 
 	h.id,
 	h.name
 ORDER BY occurrences DESC
-LIMIT 5
+LIMIT 5;
 
 
-SELECT * FROM follows
-WHERE followed_id = 994
 
