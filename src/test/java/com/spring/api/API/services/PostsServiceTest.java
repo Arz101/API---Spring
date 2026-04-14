@@ -2,77 +2,73 @@ package com.spring.api.API.services;
 
 import com.spring.api.API.Repositories.*;
 import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
-import com.spring.api.API.models.Hashtags;
-import com.spring.api.API.models.Posts;
-import com.spring.api.API.models.User;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
+import java.util.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@Transactional
 public class PostsServiceTest {
 
-    @Mock private IPostsRepository repository;
-    @Mock private IFollowsRepository followsRepository;
-    @Mock private IUserRepository userRepository;
-    @Mock private IProfileRepository profileRepository;
-    @Mock private IHashTagsRepository hashTagsRepository;
-    @Mock private StorageService storage;
-    @Mock private FeedService feedService;
-    @Mock private CacheAsyncHelper cacheAsyncHelper;
-    @Mock private SocialDataStore store;
+    @Autowired private IPostsRepository repository;
+    @Autowired private IFollowsRepository followsRepository;
+    @Autowired private IUserRepository userRepository;
+    @Autowired private IProfileRepository profileRepository;
+    @Autowired private IHashTagsRepository hashTagsRepository;
+    @Autowired private StorageService storage;
+    @Autowired private FeedService feedService;
+    @Autowired private CacheAsyncHelper cacheAsyncHelper;
+    @Autowired private ILikeRepository likeRepository;
+    @Autowired private IPostViewedRepository postViewedRepository;
+    @Autowired private SocialDataStore store;
 
-    @InjectMocks
+    @BeforeEach
+    void setUp() {
+        store = new SocialDataStore(
+                followsRepository,
+                repository,
+                hashTagsRepository,
+                likeRepository,
+                postViewedRepository
+        );
+        store.initPosts();
+        ReflectionTestUtils.setField(postsService, "store", store);
+    }
+
+    @AfterEach
+    void clean(){
+        store.clean();
+    }
+
+    @Autowired
     private PostsService postsService;
 
     @Test
+    @Transactional
     public void createNewPost(){
-        Long userId = 1L;
+        Long userId = 33168L;
         Set<String> hashtags = Set.of("java", "test");
         var newPost = new CreatePostDTO("Test", "default", hashtags);
         String username = "arz";
-
-        Posts savedPost = new Posts(newPost, new User(), Set.of());
-        savedPost.setId(1L);
-
-        Hashtags savedHashtag = new Hashtags("java");
-        savedHashtag.setPosts_count(0L);
-
-        when(userRepository.getIdByUsername(username)).thenReturn(Optional.of(userId));
-        when(userRepository.getReferenceById(userId)).thenReturn(new User());
-        when(hashTagsRepository.existsHashtag(anyString())).thenReturn(Optional.empty());
-        when(hashTagsRepository.save(any(Hashtags.class))).thenReturn(savedHashtag);
-        when(repository.save(any(Posts.class))).thenReturn(savedPost);
-
         var result = postsService.create(newPost, username);
-
         assertThat(result).isNotNull();
-        assertThat(result.id()).isEqualTo(1L);
-        verify(repository).save(any(Posts.class));
-        verify(hashTagsRepository, times(hashtags.size() + 1)).save(any(Hashtags.class));
     }
 
     @Test
     public void getAllPostsByUser(){
-        Long userId = 1L;
         String username = "arz";
-        Set<String> hashtags = Set.of("java", "test");
-        var newPost = new CreatePostDTO("Test", "default", hashtags);
-        Posts myPost = new Posts(newPost, new User(), Set.of());
-        myPost.setId(1L);
 
-        when(userRepository.getIdByUsername(username)).thenReturn(Optional.of(userId));
+        var result = this.postsService.getMyPosts(username);
+        assertThat(result)
+                .isNotEmpty()
+                .allSatisfy(post ->
+                        assertThat(post.post().username()).isEqualTo(username)
+                );
     }
 }

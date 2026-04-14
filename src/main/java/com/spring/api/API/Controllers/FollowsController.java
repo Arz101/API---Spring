@@ -18,10 +18,10 @@ public class FollowsController {
         this.service = service;
     }
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<?> followUser(@RequestParam("username") String username,
                                         @AuthenticationPrincipal UserDetails user){
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.follow_user(username, user.getUsername()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.service.followUser(username, user.getUsername()));
     }
 
     @GetMapping("/")
@@ -45,10 +45,16 @@ public class FollowsController {
         return ResponseEntity.ok(this.service.suggestionFollows(user));
     }
 
-    @DeleteMapping("/unfollow/{userId}")
-    public ResponseEntity<?> unfollowUser(@PathVariable("userId") Long userId,
+    @GetMapping("/check")
+    public ResponseEntity<?> checkFollowings(@RequestParam("username") String username,
+                                             @AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.ok(this.service.amIFollowing(user, username));
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> unfollowUser(@RequestParam("username") String username,
                                           @AuthenticationPrincipal UserDetails user){
-        this.service.unfollow(userId, user.getUsername());
+        this.service.unfollow(username, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 

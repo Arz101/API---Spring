@@ -14,15 +14,13 @@ INNER JOIN followers fr
 	ON fw.id = fr.id
 INNER JOIN users u
 	ON fr.id = u.id
-
-INSERT INTO post_hashtag (post_id, hashtag_id)
-SELECT p.id, 200 FROM posts p
-WHERE NOT EXISTS (
-	SELECT ph.post_id
-	FROM post_hashtag ph
-	WHERE p.id = ph.post_id
-)
+	
 
 
 SELECT hashtag_id, COUNT(post_id) FROM post_hashtag
 GROUP BY hashtag_id
+
+SELECT u.usern
+FROM follows f
+INNER JOIN users u ON f.followed_id = u.id
+WHERE f.follower_id = 994

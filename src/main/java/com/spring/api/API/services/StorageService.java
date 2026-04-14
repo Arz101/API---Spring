@@ -23,7 +23,7 @@ public class StorageService {
     private final List<String> EXTENSIONS = List.of("jpg", "png");
 
     public StorageService(@NonNull StorageProperties properties){
-        if(properties.getUploadDir().trim().length() == 0){
+        if(properties.getUploadDir().trim().isEmpty()){
             throw new StorageException("File upload location can not be Empty.");
         }
         this.rootLocation = Paths.get(properties.getUploadDir());

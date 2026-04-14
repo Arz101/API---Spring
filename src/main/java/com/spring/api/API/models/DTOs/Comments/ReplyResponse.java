@@ -7,5 +7,6 @@ public record ReplyResponse (
         String username,
         String content,
         OffsetDateTime dateCreated,
-        Long parentId
+        Long parentId,
+        Long replies
 ) {}

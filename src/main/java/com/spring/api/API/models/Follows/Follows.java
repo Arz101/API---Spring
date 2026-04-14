@@ -37,8 +37,10 @@ public class Follows {
 
     protected Follows(){}
 
-    public Follows(Long followerId, Long followedId, String status) {
+    public Follows(User follower, User followed, String status) {
         this.status = status;
-        this.id = new FollowsId(followerId, followedId);
+        this.follower = follower;
+        this.followed = followed;
+        this.id = new FollowsId(follower.getId(), followed.getId());
     }
 }

@@ -9,7 +9,9 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class CacheAsyncHelper {
@@ -17,6 +19,7 @@ public class CacheAsyncHelper {
     private final SocialDataStore socialDataStore;
     private final Cache<Long, List<PostResponse>> feed;
     private final FeedService feedService;
+    private final Set<Long> processing = ConcurrentHashMap.newKeySet();
     private static final Logger log = LoggerFactory.getLogger(CacheAsyncHelper.class);
 
     public CacheAsyncHelper(SocialDataStore socialDataStore,
@@ -48,16 +51,21 @@ public class CacheAsyncHelper {
     public void createFeedAsync(String username, Long userId){
         var posts = feed.getIfPresent(userId);
 
+        if(!processing.add(userId)) return;
+
         if (posts != null) {
             log.info("FEED ALREADY CREATED!!!");
             return;
         }
-
-        var result = this.feedService.createFeed(username, userId);
-        this.feed.put(userId, result);
+        try {
+            var result = this.feedService.createFeed(username, userId);
+            this.feed.put(userId, result);
+        } finally {
+            processing.remove(userId);
+        }
     }
 
-    public List<PostResponse> posts(String username, Long userId, int page, int size){
+    public List<PostResponse> posts(Long userId, int page, int size){
         var posts = feed.getIfPresent(userId);
 
         if(posts == null){

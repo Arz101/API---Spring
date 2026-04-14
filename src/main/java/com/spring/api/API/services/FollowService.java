@@ -22,29 +22,32 @@ public class FollowService {
     private final IUserRepository userRepository;
     private final IProfileRepository profileRepository;
     private final SocialRecommendationService graph;
+    private final SocialDataStore store;
     private static final Logger log = LoggerFactory.getLogger(FollowService.class);
 
     public FollowService(
             IFollowsRepository repository,
             IUserRepository userRepository,
             IProfileRepository profileRepository,
-            SocialRecommendationService graph
+            SocialRecommendationService graph,
+            SocialDataStore store
     ){
         this.repository = repository;
         this.userRepository = userRepository;
         this.profileRepository = profileRepository;
         this.graph = graph;
+        this.store = store;
     }
 
     @Transactional
-    public Map<String, String> follow_user(String target, String currentUser){
+    public Map<String, String> followUser(String target, String currentUser){
         User userTarget = this.userRepository.findByUsername(target)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Long user_id = this.userRepository.getIdByUsername(currentUser)
+        Long userId = this.userRepository.getIdByUsername(currentUser)
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
 
-        User user = this.userRepository.getReferenceById(user_id);
+        var user = this.userRepository.getReferenceById(userId);
 
         String status = "active";
         String request = "Now following user";
@@ -54,12 +57,8 @@ public class FollowService {
             request = "Follow request sent";
         }
 
-        this.repository.save(new Follows(
-                        user_id,
-                        userTarget.getId(),
-                        status
-                )
-        );
+        this.repository.save(new Follows(user,userTarget,status));
+        this.store.newFollow(currentUser, userId, target, userTarget.getId());
         return Map.of("message", request);
     }
 
@@ -75,16 +74,29 @@ public class FollowService {
     public List<?> suggestionFollows(@NonNull UserDetails user){
         var currentUserId = this.userRepository.getIdByUsername(user.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("Not found"));
+        return graph.usersWithSameInterests(user, currentUserId);
+    }
 
-        return graph.suggestionsByGraph(user, currentUserId);
+    @Transactional(readOnly = true)
+    public Map amIFollowing(UserDetails user, String following){
+        var currentUserId = this.userRepository.getIdByUsername(user.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("Not found"));
+
+        var followingId = this.userRepository.getIdByUsername(following)
+                .orElseThrow(() -> new UserNotFoundException("Not found"));
+
+        boolean exists = this.repository.isFollowOf(currentUserId, followingId);
+        return Map.of("message", exists);
     }
 
     @Transactional
-    public void unfollow(Long userId, String username){
+    public void unfollow(String target, String username){
         var currentUser = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
 
-        var follow = this.repository.findByFollowerIdAndFollowedId(currentUser, userId)
+        var targetId = this.userRepository.getIdByUsername(target)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
+        var follow = this.repository.findByFollowerIdAndFollowedId(currentUser, targetId)
                 .orElseThrow(() -> new FollowNotFoundException("Follow not exists"));
         this.repository.delete(follow);
     }
@@ -99,7 +111,7 @@ public class FollowService {
 
         follow.setStatus("active");
         this.repository.save(follow);
-        String message = "User: 994 now is following user: %s".formatted(user.getUsername());
+        String message = "Now is following user: %s".formatted(user.getUsername());
         return Map.of("message", message);
     }
 

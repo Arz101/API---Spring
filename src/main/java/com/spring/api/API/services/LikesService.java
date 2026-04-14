@@ -1,6 +1,7 @@
 package com.spring.api.API.services;
 
 import com.spring.api.API.Repositories.*;
+import com.spring.api.API.models.DTOs.User.UserNode;
 import com.spring.api.API.models.Likes.Likes;
 import com.spring.api.API.models.PostViewed.PostViewed;
 import com.spring.api.API.security.Exceptions.PostNotFoundException;
@@ -9,6 +10,7 @@ import com.spring.api.API.security.Exceptions.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.Map;
 
 @Service
@@ -81,6 +83,24 @@ public class LikesService {
 
         view.setLikes(false);
         this.likeRepository.deleteByPostIdAndUserId(postId, currentUser);
+    }
+
+    public Map isLiked(Long postId, String username){
+        var userId = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+
+        var currentUser = new UserNode(userId, username);
+        var postsLiked = this.store.getUsersAndPostsLiked().getOrDefault(currentUser, new HashSet<>());
+
+        if (postsLiked.contains(postId)) {
+            return Map.of("message", true);
+        }
+        return Map.of("message", false);
+    }
+
+    public Map likesCount(Long postId){
+        var posts = this.store.getPostsLikesByUsers().get(postId);
+        return Map.of("likes", posts.size());
     }
 
 }

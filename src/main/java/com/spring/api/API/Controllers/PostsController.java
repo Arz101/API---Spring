@@ -97,9 +97,8 @@ public class PostsController {
         return ResponseEntity.ok(service.popularPostsLikedByFolloweds(user.getUsername()));
     }
 
-    @GetMapping("/test/ranking")
-    public ResponseEntity<?> testsRanking(@AuthenticationPrincipal UserDetails user) {
-        return ResponseEntity.ok(this.service.testRanking(user));
+    @GetMapping("/liked")
+    public ResponseEntity<?> getLikedPosts(@AuthenticationPrincipal UserDetails user) {
+        return ResponseEntity.ok(this.service.getPostsLiked(user));
     }
-
 }

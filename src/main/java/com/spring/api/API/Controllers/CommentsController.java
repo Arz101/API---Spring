@@ -30,6 +30,16 @@ public class CommentsController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.service.create(comment, user.getUsername()));
     }
 
+    @GetMapping("/{postId}")
+    public ResponseEntity<?> getComments(@PathVariable("postId") Long postId, @AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.ok(this.service.findCommentsByPostId(postId));
+    }
+
+    @GetMapping("/reply/{commentId}")
+    public ResponseEntity<?> getReplies(@PathVariable("commentId") Long commentId, @AuthenticationPrincipal UserDetails user){
+        return ResponseEntity.ok(this.service.findReplies(commentId));
+    }
+
     @PostMapping("/reply/{commentId}")
     public ResponseEntity<?> replayComment(@Valid @RequestBody() CommentReplyCreate comment,
                                            @PathVariable("commentId") Long commentId,

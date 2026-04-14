@@ -61,7 +61,7 @@ public class CommentsService {
             newComment.getDateCreated(),
             newComment.getUser().getUsername(),
             null,
-            newComment.getPost().getId()
+            newComment.getPost().getId(), 0L
         );
     }
 
@@ -98,7 +98,8 @@ public class CommentsService {
                 newComment.getDateCreated(),
                 newComment.getUser().getUsername(),
                 null,
-                newComment.getPost().getId()
+                newComment.getPost().getId(),
+                0L
         );
     }
 
@@ -126,13 +127,19 @@ public class CommentsService {
                 comment.getDateCreated(),
                 comment.getUser().getUsername(),
                 commentToRep.getId(),
-                comment.getPost().getId()
+                comment.getPost().getId(),
+                0L
         );
     }
 
     @Transactional(readOnly = true)
+    public List<CommentResponse> findReplies(Long commentId){
+        return  this.repository.findRepliesByCommentId(commentId);
+    }
+
+    @Transactional(readOnly = true)
     public List<?> getCommentsByPostId(Long postId){
-        var comments = this.repository.getCommentsByPostId(postId);
+        var comments = this.repository.findAllCommentsByPostId(postId);
         return new CommentsHierarchy().buildHierarchy(comments);
     }
 }

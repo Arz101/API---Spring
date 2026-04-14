@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import com.spring.api.API.Repositories.*;
 import com.spring.api.API.models.*;
 import com.spring.api.API.models.DTOs.Posts.*;
+import com.spring.api.API.models.DTOs.User.UserNode;
 import com.spring.api.API.security.Exceptions.PostsActionsUnauthorized;
 import com.spring.api.API.security.Exceptions.ProfilePrivateException;
 import org.jspecify.annotations.NonNull;
@@ -13,8 +14,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import com.spring.api.API.security.Exceptions.PostNotFoundException;
 import com.spring.api.API.security.Exceptions.UserNotFoundException;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,7 +50,7 @@ public class PostsService {
     }
 
     @Transactional
-    public PostData create(@NonNull CreatePostDTO dto, String username) {
+    public PostResponse create(@NonNull CreatePostDTO dto, String username) {
         var user_id = this.userRepository.getIdByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
         var userRef = this.userRepository.getReferenceById(user_id);
@@ -90,7 +89,8 @@ public class PostsService {
         this.store.AddNewPosts(postData, username, hashtags.stream()
                 .map(Hashtags::getName).collect(Collectors.toSet()));
 
-        return postData;
+        return new PostResponse(postData,
+                this.store.getHashtagsByPosts().getOrDefault(postData.id(), new HashSet<>()));
     }
 
     public void attachImage(Long postId, MultipartFile file, @NonNull UserDetails user){
@@ -105,11 +105,12 @@ public class PostsService {
     }
 
     @Transactional(readOnly = true)
-    public List<?> getMyPosts(String username) {
-        var user_id = this.userRepository.getIdByUsername(username)
-            .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
-        var posts = this.feedService.getPostsByMap(username);
-        return posts;
+    public List<PostResponse> getMyPosts(String username) {
+        var posts = this.store.getPostsByUsers().getOrDefault(username, new HashSet<>());
+        return posts.stream()
+                .map(post -> new PostResponse(post, this.store.getHashtagsByPosts()
+                        .getOrDefault(post.id(), new HashSet<>())))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -120,32 +121,16 @@ public class PostsService {
     }
 
     @Transactional(readOnly = true)
-    public List<?> timeLine(String username) {
-        var userIds = this.followsRepository.findFollowedUserIdsByFollowerUsername(username);
-        Pageable pageable = PageRequest.of(0, 50);
-
-        var hashtags = this.hashTagsRepository.getAllHashtagsByFollowingsId(userIds);
-        var posts = this.repository.findFeed(userIds, pageable);
-
-        var hashtags_mapped = hashtags.stream()
-                .collect(Collectors.groupingBy(
-                        HashtagsDTO::postId,
-                        Collectors.mapping(HashtagsDTO::name, Collectors.toSet())
-                ));
-
-        return posts.stream().map(post -> {
-            var hashes = hashtags_mapped.getOrDefault(post.id(), Set.of());
-            return new PostResponse(
-                    post, hashes
-            );
-
-        }).collect(Collectors.toList());
+    public List<PostResponse> timeLine(String username) {
+        var userId = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong"));
+        return this.feedService.timeLine(username, userId);
     }
 
     public List<PostResponse> feed (@NonNull UserDetails user, int page, int size){
         var userId = this.userRepository.getIdByUsername(user.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
-        return this.cacheAsyncHelper.posts(user.getUsername(), userId, page, size);
+        return this.cacheAsyncHelper.posts(userId, page, size);
     }
 
     @Transactional
@@ -292,10 +277,16 @@ public class PostsService {
         }).collect(Collectors.toList());
     }
 
-    public List<?> testRanking(@NonNull UserDetails user){
+    public List<PostResponse> getPostsLiked(@NonNull UserDetails user){
         var userId = this.userRepository.getIdByUsername(user.getUsername())
-                .orElseThrow(() -> new UserNotFoundException("Not found"));
+                .orElseThrow(() -> new UserNotFoundException("Something went wrong!"));
+        var currentUser = new UserNode(userId, user.getUsername());
 
-        return this.feedService.postsRecommendations(user.getUsername(), userId);
+        var postsIds = this.store.getUsersAndPostsLiked().getOrDefault(currentUser, Set.of());
+
+        return postsIds.stream().map(post -> new PostResponse(
+                this.store.getPostsById().get(post),
+                this.store.getHashtagsByPosts().getOrDefault(post, Set.of())
+        )).toList();
     }
 }

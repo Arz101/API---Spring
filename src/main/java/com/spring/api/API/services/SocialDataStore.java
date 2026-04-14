@@ -9,11 +9,13 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Getter
@@ -25,22 +27,22 @@ public class SocialDataStore {
     private final ILikeRepository likeRepository;
     private final IPostViewedRepository postViewedRepository;
 
-    private final Map<Long, PostData> postsById = new HashMap<>();
-    private final Map<String, Set<PostData>> postsByUsers = new HashMap<>(); // Username is the key and the value of your own posts
+    private final Map<Long, PostData> postsById = new ConcurrentHashMap<>();
+    private final Map<String, Set<PostData>> postsByUsers = new ConcurrentHashMap<>(); // Username is the key and the value of your own posts
 
-    private final Map<Long, Set<String>> hashtagsByPosts = new HashMap<>();
-    private final Map<String, Set<PostData>> postsGroupedByTags = new HashMap<>();
+    private final Map<Long, Set<String>> hashtagsByPosts = new ConcurrentHashMap<>();
+    private final Map<String, Set<PostData>> postsGroupedByTags = new ConcurrentHashMap<>();
 
-    private final Map<String, Map<String, Integer>> hashtagGraph = new HashMap<>();
+    private final Map<String, Map<String, Integer>> hashtagGraph = new ConcurrentHashMap<>();
 
-    private final Map<Long, Set<UserNode>> postsLikesByUsers = new HashMap<>(); //PostId and the users who liked it
-    private final Map<UserNode, Set<Long>> usersAndPostsLiked = new HashMap<>(); // Reverse index
+    private final Map<Long, Set<UserNode>> postsLikesByUsers = new ConcurrentHashMap<>(); //PostId and the users who liked it
+    private final Map<UserNode, Set<Long>> usersAndPostsLiked = new ConcurrentHashMap<>(); // Reverse index
 
-    private final Map<UserNode, Map<String, Integer>> usersTags = new HashMap<>(); // Users interest
+    private final Map<UserNode, Map<String, Integer>> usersTags = new ConcurrentHashMap<>(); // Users interest
 
-    private final Map<UserNode, Set<UserNode>> followsGraph = new HashMap<>();
+    private final Map<UserNode, Set<UserNode>> followsGraph = new ConcurrentHashMap<>();
 
-    private final Map<UserNode, Set<Long>> postsIdAlreadyViewedPerUser = new HashMap<>();
+    private final Map<UserNode, Set<Long>> postsIdAlreadyViewedPerUser = new ConcurrentHashMap<>();
 
     private static final Logger log = LoggerFactory.getLogger(SocialDataStore.class);
 
@@ -183,6 +185,32 @@ public class SocialDataStore {
         return CompletableFuture.completedFuture(null);
     }
 
+    public Set<String> getTop5TagsByUser(UserNode user){
+        var mapTags = this.getUsersTags().getOrDefault(user, new HashMap<>());
+        return mapTags.entrySet()
+                .stream()
+                .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
+                .map(Map.Entry::getKey)
+                .limit(5)
+                .collect(Collectors.toSet());
+    }
+
+    public void clean(){
+        this.postsById.clear();
+        this.hashtagsByPosts.clear();
+        this.usersAndPostsLiked.clear();
+        this.usersTags.clear();
+        this.postsLikesByUsers.clear();
+        this.postsByUsers.clear();
+        this.postsIdAlreadyViewedPerUser.clear();
+        this.followsGraph.clear();
+        this.hashtagGraph.clear();
+        this.postsGroupedByTags.clear();
+        this.hashtagsByPosts.clear();
+        this.postsByUsers.clear();
+        this.postsIdAlreadyViewedPerUser.clear();
+    }
+
     @Async("taskExecutor")
     public void AddNewPosts(PostData postData, String username, Set<String> tags){
         log.info("Add new post: {}", postData.id());
@@ -240,5 +268,13 @@ public class SocialDataStore {
 
         this.postsIdAlreadyViewedPerUser.computeIfAbsent(currentUser, u -> new HashSet<>())
                 .add(postId);
+    }
+
+    @Async("taskExecutor")
+    public void newFollow(String username, Long userId, String followUsername, Long userIdFollow){
+        var follow = new UserNode(userIdFollow, followUsername);
+        var currentUser = new UserNode(userId, username);
+        this.followsGraph.getOrDefault(currentUser, new HashSet<>())
+                .add(follow);
     }
 }

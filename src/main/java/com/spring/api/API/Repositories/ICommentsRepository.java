@@ -26,13 +26,34 @@ public interface ICommentsRepository extends JpaRepository<Comments, Long>{
             c.dateCreated,
             c.user.username,
             c.parent.id,
-            c.post.id
+            c.post.id,
+            COUNT(c2.id)
         )
         FROM Comments c
-        WHERE c.post.id =:post_id
-        ORDER BY c.dateCreated
+        LEFT JOIN Comments c2 ON c2.parent.id = c.id 
+        WHERE c.post.id =:postId AND c.parent.id IS NULL
+        GROUP BY c.id, c.content, c.dateCreated, c.user.username, c.parent.id, c.post.id
+        ORDER BY c.dateCreated DESC
     """)
-    List<CommentResponse> findCommentsByPostId(@Param("post_id") Long post_id);
+    List<CommentResponse> findCommentsByPostId(@Param("postId") Long postId);
+
+    @Query("""
+        SELECT new com.spring.api.API.models.DTOs.Comments.CommentResponse(
+            c.id,
+            c.content,
+            c.dateCreated,
+            c.user.username,
+            c.parent.id,
+            c.post.id,
+            COUNT(c2.id)
+        )
+        FROM Comments c
+        LEFT JOIN Comments c2 ON c2.parent.id = c.id
+        WHERE c.parent.id =:commentId
+        GROUP BY c.id, c.content, c.dateCreated, c.user.username, c.parent.id, c.post.id
+        ORDER BY c.dateCreated DESC 
+    """)
+    List<CommentResponse> findRepliesByCommentId(@Param("commentId") Long commentId);
 
     @Query("""
         SELECT c
@@ -48,18 +69,21 @@ public interface ICommentsRepository extends JpaRepository<Comments, Long>{
     """)
     Optional<Comments> findCommentById(@Param("comment_id") Long comment_id);
 
-    @Query(value = """
+    @Query("""
         SELECT new com.spring.api.API.models.DTOs.Comments.CommentResponse(
             c.id,
             c.content,
             c.dateCreated,
             c.user.username,
             c.parent.id,
-            c.post.id
+            c.post.id,
+            COUNT(c2.id)
         )
         FROM Comments c
-        WHERE c.post.id =:postId 
+        LEFT JOIN Comments c2 ON c2.parent.id = c.id 
+        WHERE c.post.id =:postId
+        GROUP BY c.id, c.content, c.dateCreated, c.user.username, c.parent.id, c.post.id
     """)
-    List<CommentResponse> getCommentsByPostId(@Param("postId") Long postId);
+    List<CommentResponse> findAllCommentsByPostId(@Param("postId") Long postId);
 }
 

@@ -12,17 +12,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
-@Table (
-        name = "tokens",
-        indexes = {
-                @Index(name = "ix_tokens_token_hash", columnList = "token_hash"),
-                @Index(name = "ix_Tokens_id", columnList = "id"),
-                @Index(name = "ix_tokens_assigned_to", columnList = "assigned_to")
-        },
-        uniqueConstraints = {
-                @UniqueConstraint(name = "uq_active_token", columnNames = {"assigned_to", "token_type"})
-        }
-)
+@Table (name = "tokens")
 public class Tokens {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,18 +1,14 @@
 package com.spring.api.API.services;
 
-import com.github.benmanes.caffeine.cache.Cache;
 import com.spring.api.API.models.DTOs.Posts.*;
 import com.spring.api.API.models.DTOs.User.UserNode;
 import jakarta.annotation.PostConstruct;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,34 +18,13 @@ public class FeedService {
     private static final double TAGCOMMON = 2.0;
 
     private static final Logger log = LoggerFactory.getLogger(FeedService.class);
-
-    private final Cache<Long, List<PostResponse>> feed;
-
     private final SocialDataStore store;
 
-    private Map<String, Map<String, Integer>> hashtagGraph = new HashMap<>();
-    private Map<Long, Set<UserNode>> postsLikesByUsers = new HashMap<>();
-    private Map<String, Set<PostData>> postsGroupedByTags = new HashMap<>();
-
-    public FeedService(SocialDataStore socialService,
-                       Cache<Long, List<PostResponse>> feed) {
+    public FeedService(SocialDataStore socialService) {
         this.store = socialService;
-        this.feed = feed;
     }
 
-    @PostConstruct
-    private void load(){
-        this.postsLikesByUsers = this.store.getPostsLikesByUsers();
-        this.hashtagGraph = this.store.getHashtagGraph();
-        this.postsGroupedByTags = this.store.getPostsGroupedByTags();
-    }
-
-    public List<PostResponse> postsRecommendations(String username, Long userId){
-        //return this.recommendations.get(userId, u -> this.postRecommendationBasedOnFollowsLikes(username, userId));
-        return List.of();
-    }
-
-    public List<?> getPostsByMap(String username){
+    public List<PostResponse> getPostsByMap(String username){
         var posts = this.store.getPostsByUsers().getOrDefault(username, new HashSet<>());
 
         return posts.stream().map(post ->
@@ -59,7 +34,7 @@ public class FeedService {
     }
 
     public List<?> getMostHashOccurrencesByHash(String hashtag){
-        var map = this.hashtagGraph.getOrDefault(hashtag, new HashMap<>());
+        var map = this.store.getHashtagGraph().getOrDefault(hashtag, new HashMap<>());
         return map.entrySet().stream()
                 .sorted(Map.Entry.<String,Integer>comparingByValue().reversed())
                 .limit(5)
@@ -69,7 +44,7 @@ public class FeedService {
 
     public Set<Long> postsILiked(String username, Long userId){
         var currentUser = new UserNode(userId, username);
-        return this.postsLikesByUsers.entrySet().stream()
+        return this.store.getPostsLikesByUsers().entrySet().stream()
                 .filter(key -> key.getValue()
                         .contains(currentUser))
                 .map(p -> p.getKey())
@@ -124,7 +99,7 @@ public class FeedService {
     private Set<PostResponse> popularPostsByTagOccurrences(@NonNull List<String> tags, Long userId, String username){
         var tagsOccurrences = tags.parallelStream()
                 .flatMap(tag -> {
-                    var map = this.hashtagGraph.getOrDefault(tag, Map.of());
+                    var map = this.store.getHashtagGraph().getOrDefault(tag, Map.of());
                     return map.entrySet().stream()
                             .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                             .limit(3)
@@ -135,7 +110,7 @@ public class FeedService {
         tagsOccurrences.addAll(tags);
 
         var popularPostsByTags = tagsOccurrences.stream()
-                .flatMap(tag -> this.postsGroupedByTags.getOrDefault(tag, new HashSet<>())
+                .flatMap(tag -> this.store.getPostsGroupedByTags().getOrDefault(tag, new HashSet<>())
                         .stream())
                 .filter(posts -> !this.store.getPostsIdAlreadyViewedPerUser()
                         .getOrDefault(new UserNode(userId, username), new HashSet<>())
@@ -189,7 +164,7 @@ public class FeedService {
     }
 
     private List<PostResponse> rankPopularPostsByTagsRecommendations(String username, Long userId,
-                                                                     Map<UserNode, Set<PostData>> postsLikedByFollows,
+                                                                     @NonNull Map<UserNode, Set<PostData>> postsLikedByFollows,
                                                                      List<String> tags){
         var popularPosts = this.popularPostsByTagOccurrences(tags, userId, username);
         var setPostsLoF = postsLikedByFollows.entrySet()
@@ -199,8 +174,10 @@ public class FeedService {
         Map<PostData, Double> rankPostsByTags = new HashMap<>();
 
         for (var post : popularPosts){
-            if(setPostsLoF.contains(post)) continue;
             double score = (post.post().likes() * LIKE) + ( post.post().comments() * COMMENT);
+            if(setPostsLoF.contains(post)) {
+                score += 30.0;
+            }
             rankPostsByTags.merge(post.post(), score, Double::sum);
         }
 
@@ -214,5 +191,31 @@ public class FeedService {
                             .getOrDefault(p.id(), new HashSet<>())
                     );
                 }).toList();
+    }
+
+    public List<PostResponse> timeLine (String username, Long userId){
+        var currentUser = new UserNode(userId, username);
+        var myFollowings = this.store.getFollowsGraph().getOrDefault(currentUser, Set.of());
+        var postsLiked = this.store.getUsersAndPostsLiked().getOrDefault(currentUser, Set.of());
+
+        var posts = myFollowings.stream()
+                .flatMap(user -> this.store.getPostsByUsers()
+                        .getOrDefault(user.username(), new HashSet<>()).stream())
+                .filter(post -> !postsLiked.contains(post.id()))
+                .toList();
+
+        Map<PostData, Double> rankPostsByTags = new HashMap<>();
+
+        for (var post : posts){
+            double score = (post.likes() * LIKE) + ( post.comments() * COMMENT);
+            rankPostsByTags.merge(post, score, Double::sum);
+        }
+
+        return rankPostsByTags.entrySet().stream()
+                .sorted(Map.Entry.<PostData, Double>comparingByValue().reversed())
+                .map(key -> new PostResponse(key.getKey(), this.store.getHashtagsByPosts()
+                        .getOrDefault(key.getKey().id(), new HashSet<>())))
+                .limit(50)
+                .toList();
     }
 }

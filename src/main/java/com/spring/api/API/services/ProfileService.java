@@ -125,7 +125,7 @@ public class ProfileService {
     }
 
     @Transactional(readOnly = true)
-    public ProfileStats get_profile_stats(String target, String username){
+    public ProfileStats getProfileStats(String target, String username){
         Long targetUserId = this.userRepository.getIdByUsername(target)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -144,6 +144,13 @@ public class ProfileService {
             }
         }
         return this.repository.getProfileStats(targetUserId);
+    }
+
+    @Transactional(readOnly = true)
+    public ProfileStats meProfileStats(String username){
+        Long userId = this.userRepository.getIdByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        return this.repository.getProfileStats(userId);
     }
 
     @Transactional
@@ -166,13 +173,9 @@ public class ProfileService {
 
         profile = this.repository.save(profile);
         return new ProfileResponseDTO(
-                profile.getProfileId(),
-                profile.getName(),
-                profile.getLastname(),
-                profile.getBirthday(),
-                profile.getAvatarUrl(),
-                profile.getBio(),
-                profile.getPrivateField()
+                profile.getProfileId(), profile.getName(), profile.getLastname(),
+                profile.getBirthday(), profile.getAvatarUrl(),
+                profile.getBio(), profile.getPrivateField()
         );
     }
 

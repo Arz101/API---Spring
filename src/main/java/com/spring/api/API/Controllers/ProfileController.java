@@ -29,8 +29,13 @@ public class ProfileController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal UserDetails user){
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal @NonNull UserDetails user){
         return ResponseEntity.status(HttpStatus.OK).body(this.service.myProfile(user.getUsername()));
+    }
+
+    @GetMapping("/me/stats")
+    public ResponseEntity<?> getStats(@AuthenticationPrincipal @NonNull UserDetails user){
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.meProfileStats(user.getUsername()));
     }
 
     @GetMapping("/search")
@@ -40,7 +45,7 @@ public class ProfileController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<?> updateProfile(@Valid @RequestBody() ProfileUpdate data, Authentication auth){
+    public ResponseEntity<?> updateProfile(@Valid @RequestBody() ProfileUpdate data, @NonNull Authentication auth){
         return ResponseEntity.ok(this.service.updateProfile(data, auth.getName()));
     }
 
@@ -59,7 +64,7 @@ public class ProfileController {
     @GetMapping("/{username}/stats")
     public ResponseEntity<?> getProfileStats(@PathVariable("username") String username,
                                              @NonNull @AuthenticationPrincipal UserDetails user){
-        return ResponseEntity.status(HttpStatus.OK).body(this.service.get_profile_stats(username,user.getUsername()));
+        return ResponseEntity.status(HttpStatus.OK).body(this.service.getProfileStats(username,user.getUsername()));
     }
 
     @PostMapping("/upload-avatar")

@@ -47,17 +47,17 @@
 - ✅ Feed basado en hashtags co-ocurrentes (createFeed)
 - ✅ Scoring de posts: rankPosts() - combinar likes sociales + afinidad de hashtags + popularidad
 - ✅ Incorporar followsGraph al feed (posts que gustaron a personas que sigo)
-- [ ] Filtrado colaborativo: usuarios con gustos similares likearon X
+- ✅ Filtrado colaborativo: usuarios con gustos similares likearon X
 - ✅ Excluir posts ya vistos del feed (usar PostViewed)
-- [ ] Recomendacion de personas por peso de aristas en followsGraph
+- ✅ Recomendacion de personas por peso de aristas en followsGraph
 
 ## Cache y Actualizacion en Tiempo Real
 - ✅ Cache de feed por usuario (Caffeine)
-- [ ] Invalidar/actualizar cache al crear un nuevo post
-- [ ] Actualizar SocialDataStore en memoria al registrar un nuevo like
-- [ ] Actualizar SocialDataStore en memoria al registrar un nuevo follow
-- [ ] Actualizar SocialDataStore en memoria al crear un post
-- [ ] Registrar vistas de posts y alimentar el motor de recomendaciones
+- ✅ Invalidar/actualizar cache al crear un nuevo post
+- ✅ Actualizar SocialDataStore en memoria al registrar un nuevo like
+- ✅ Actualizar SocialDataStore en memoria al registrar un nuevo follow
+- ✅ Actualizar SocialDataStore en memoria al crear un post
+- ✅ Registrar vistas de posts y alimentar el motor de recomendaciones
 
 ## Guardar Posts
 - ✅ Endpoint para guardar/favoritar posts
@@ -66,15 +66,16 @@
 - ✅ Tabla de relación usuario-posts guardados
 - ✅ Validar que no se guarde el mismo post dos veces
 
-## Compartir Posts
-- [ ] Endpoint para compartir posts
-- [ ] Endpoint para borrar post compartido
-
 ## Subida de Archivos
 - ✅ Endpoint para subir archivos/imágenes
 - ✅ Validar tipo y tamaño de archivo
 - ✅ Asociar archivos a posts
 - ✅ Limitar tamaño máximo de carga
+
+## Compartir Posts
+- [ ] Endpoint para compartir posts
+- [ ] Endpoint para borrar post compartido
+
 
 ## Notificaciones en Tiempo Real
 - [ ] Configurar WebSocket para notificaciones

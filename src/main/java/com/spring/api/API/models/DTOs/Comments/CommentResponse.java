@@ -8,5 +8,6 @@ public record CommentResponse(
         OffsetDateTime datecreated,
         String username,
         Long parentId,
-        Long postId
+        Long postId,
+        Long replies
 ) {}
