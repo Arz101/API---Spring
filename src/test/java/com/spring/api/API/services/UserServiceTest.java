@@ -1,11 +1,13 @@
 package com.spring.api.API.services;
 
-import com.spring.api.API.Repositories.IBlockedUsersRepository;
-import com.spring.api.API.Repositories.IEmailTokensRepository;
-import com.spring.api.API.Repositories.IFollowsRepository;
-import com.spring.api.API.Repositories.IUserRepository;
-import com.spring.api.API.models.DTOs.User.CreateUserDTO;
-import com.spring.api.API.models.User;
+import com.spring.api.API.users.IBlockedUsersRepository;
+import com.spring.api.API.emails.IEmailTokensRepository;
+import com.spring.api.API.auth.TokenService;
+import com.spring.api.API.follows.IFollowsRepository;
+import com.spring.api.API.users.IUserRepository;
+import com.spring.api.API.users.UserService;
+import com.spring.api.API.users.dtos.CreateUserDTO;
+import com.spring.api.API.users.User;
 import com.spring.api.API.security.Exceptions.UserAlreadyExistsException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +15,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;

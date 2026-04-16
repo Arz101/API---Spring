@@ -1,16 +1,16 @@
 package com.spring.api.API.services;
 
-import com.spring.api.API.Repositories.*;
-import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
+import com.spring.api.API.follows.IFollowsRepository;
+import com.spring.api.API.likes.ILikeRepository;
+import com.spring.api.API.posts.IPostsRepository;
+import com.spring.api.API.posts.postviewed.IPostViewedRepository;
+import com.spring.api.API.tags.IHashTagsRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
-
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 

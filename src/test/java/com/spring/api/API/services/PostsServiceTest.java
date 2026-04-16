@@ -1,7 +1,15 @@
 package com.spring.api.API.services;
 
-import com.spring.api.API.Repositories.*;
-import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
+import com.spring.api.API.follows.IFollowsRepository;
+import com.spring.api.API.likes.ILikeRepository;
+import com.spring.api.API.posts.FeedService;
+import com.spring.api.API.posts.IPostsRepository;
+import com.spring.api.API.posts.PostsService;
+import com.spring.api.API.posts.postviewed.IPostViewedRepository;
+import com.spring.api.API.profiles.IProfileRepository;
+import com.spring.api.API.tags.IHashTagsRepository;
+import com.spring.api.API.users.IUserRepository;
+import com.spring.api.API.posts.dtos.CreatePostDTO;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

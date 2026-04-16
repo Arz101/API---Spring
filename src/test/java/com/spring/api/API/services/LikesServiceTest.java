@@ -1,10 +1,16 @@
 package com.spring.api.API.services;
 
-import com.spring.api.API.Repositories.*;
-import com.spring.api.API.models.DTOs.Posts.CreatePostDTO;
-import com.spring.api.API.models.Likes.Likes;
-import com.spring.api.API.models.Posts;
-import com.spring.api.API.models.User;
+import com.spring.api.API.follows.IFollowsRepository;
+import com.spring.api.API.likes.ILikeRepository;
+import com.spring.api.API.likes.LikesService;
+import com.spring.api.API.posts.IPostsRepository;
+import com.spring.api.API.posts.postviewed.IPostViewedRepository;
+import com.spring.api.API.profiles.IProfileRepository;
+import com.spring.api.API.users.IUserRepository;
+import com.spring.api.API.posts.dtos.CreatePostDTO;
+import com.spring.api.API.likes.Likes.Likes;
+import com.spring.api.API.posts.Posts;
+import com.spring.api.API.users.User;
 import com.spring.api.API.security.Exceptions.ProfilePrivateException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

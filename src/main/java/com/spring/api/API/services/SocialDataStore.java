@@ -1,15 +1,18 @@
 package com.spring.api.API.services;
 
-import com.spring.api.API.Repositories.*;
-import com.spring.api.API.models.DTOs.Posts.HashtagsDTO;
-import com.spring.api.API.models.DTOs.Posts.PostData;
-import com.spring.api.API.models.DTOs.User.UserNode;
+import com.spring.api.API.follows.IFollowsRepository;
+import com.spring.api.API.likes.ILikeRepository;
+import com.spring.api.API.posts.dtos.HashtagsDTO;
+import com.spring.api.API.posts.dtos.PostData;
+import com.spring.api.API.users.dtos.UserNode;
+import com.spring.api.API.posts.IPostsRepository;
+import com.spring.api.API.posts.postviewed.IPostViewedRepository;
+import com.spring.api.API.tags.IHashTagsRepository;
 import lombok.Getter;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 

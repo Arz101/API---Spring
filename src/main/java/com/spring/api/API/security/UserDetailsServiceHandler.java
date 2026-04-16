@@ -1,10 +1,10 @@
 package com.spring.api.API.security;
 
-import com.spring.api.API.Repositories.IUserRepository;
-import com.spring.api.API.models.DTOs.Auth.UserDetailCredentials;
+import com.spring.api.API.users.IUserRepository;
+import com.spring.api.API.auth.dtos.UserDetailCredentials;
 import com.spring.api.API.security.Exceptions.AccountException;
 import com.spring.api.API.services.CacheAsyncHelper;
-import com.spring.api.API.services.FeedService;
+import com.spring.api.API.posts.FeedService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

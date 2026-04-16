@@ -1,7 +1,8 @@
 package com.spring.api.API.services;
 
 import com.github.benmanes.caffeine.cache.Cache;
-import com.spring.api.API.models.DTOs.Posts.PostResponse;
+import com.spring.api.API.posts.dtos.PostResponse;
+import com.spring.api.API.posts.FeedService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

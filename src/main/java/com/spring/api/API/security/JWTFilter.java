@@ -1,6 +1,6 @@
 package com.spring.api.API.security;
 
-import com.spring.api.API.services.JWTService;
+import com.spring.api.API.auth.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
